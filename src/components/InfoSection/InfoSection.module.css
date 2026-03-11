@@ -1,0 +1,87 @@
+.infoSection {
+  width: 100%;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px 48px;
+  display: flex;
+  align-items: flex-start;
+  gap: 80px;
+}
+
+.textCol {
+  flex: 0 0 320px;
+}
+
+.description {
+  font-size: 15px;
+  color: #3a3a3a;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.blocksCol {
+  flex: 1;
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.infoBlock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.blockTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.blockSubtitle {
+  font-size: 13px;
+  color: #888888;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.divider {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  height: 1px;
+  background-color: #e5e5e5;
+}
+
+@media (max-width: 900px) {
+  .container {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .textCol {
+    flex: unset;
+  }
+
+  .blocksCol {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .blocksCol {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .container {
+    padding: 0 20px 40px;
+  }
+}
+

@@ -1,0 +1,19 @@
+.page {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 720px;
+  padding: 20px 22px;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
+}
+

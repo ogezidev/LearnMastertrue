@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Bricolage Grotesque', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background-color: #ffffff;
+  color: #111111;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Mantém a barra de rolagem vertical sempre visível
+     para evitar pequenos “saltos” horizontais do layout
+     (incluindo o header) quando troca de página. */
+  overflow-y: scroll;
+}
+
+.app {
+  width: 100%;
+  overflow-x: hidden;
+}

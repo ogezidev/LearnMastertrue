@@ -1,0 +1,208 @@
+/* ── Página ────────────────────────────────────── */
+.pagina {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 80px 60px;
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 80px;
+}
+
+/* ── Coluna esquerda — formulário ──────────────── */
+.formCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.formHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+.title {
+  font-size: 52px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 17px;
+  color: #888888;
+  margin: 0;
+}
+
+/* Formulário */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  height: 68px;
+  padding: 0 24px;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 14px;
+  font-size: 16px;
+  font-family: inherit;
+  color: #111111;
+  outline: none;
+  background: #ffffff;
+  box-sizing: border-box;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input::placeholder {
+  color: #aaaaaa;
+}
+
+.input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btnEntrar {
+  width: 100%;
+  padding: 20px;
+  background-color: #378BFE;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin-top: 4px;
+}
+
+.btnEntrar:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+/* Footer do form */
+.formFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: #555555;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 17px;
+  height: 17px;
+  accent-color: #2563EB;
+  cursor: pointer;
+}
+
+.linkEsqueceu {
+  font-size: 15px;
+  color: #2563EB;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.linkEsqueceu:hover {
+  text-decoration: underline;
+}
+
+/* Link cadastro */
+.cadastroLink {
+  text-align: center;
+  font-size: 15px;
+  color: #888888;
+  margin: 0;
+}
+
+.link {
+  color: #2563EB;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* ── Coluna direita — imagem ───────────────────── */
+.imageCol {
+  flex: 0 0 480px;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 540px;
+  object-fit: cover;
+  display: block;
+  border-radius: 24px;
+}
+
+/* ── Responsivo ────────────────────────────────── */
+@media (max-width: 960px) {
+  .container {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .imageCol {
+    flex: unset;
+    width: 100%;
+  }
+
+  .image {
+    height: 300px;
+  }
+
+  .main {
+    padding: 32px 32px 56px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: 24px 16px 40px;
+  }
+
+  .title {
+    font-size: 40px;
+  }
+}

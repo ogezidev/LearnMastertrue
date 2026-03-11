@@ -1,0 +1,150 @@
+/* ── Seção ─────────────────────────────────────── */
+.section {
+  width: 100%;
+  padding: 80px 40px 96px;
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 80px;
+}
+
+/* ── Coluna esquerda ───────────────────────────── */
+.textCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.title {
+  font-size: clamp(30px, 3.2vw, 48px);
+  font-weight: 800;
+  color: #111111;
+  line-height: 1.15;
+  margin: 0 0 20px;
+  max-width: 480px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #444444;
+  line-height: 1.7;
+  margin: 0 0 48px;
+  max-width: 460px;
+}
+
+/* ── Lista de features ─────────────────────────── */
+.featureList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px 40px;
+}
+
+/* ── Feature item ──────────────────────────────── */
+.featureItem {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.featureIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.featureIcon img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.featureText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.featureTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2563EB;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.featureSubtitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2563EB;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.featureDescription {
+  font-size: 14px;
+  color: #555555;
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* ── Coluna direita — imagem ───────────────────── */
+.imageCol {
+  flex: 0 0 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 20px;
+  display: block;
+}
+
+/* ── Responsivo ────────────────────────────────── */
+@media (max-width: 960px) {
+  .container {
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  .imageCol {
+    flex: unset;
+    width: 100%;
+    max-width: 500px;
+    align-self: center;
+  }
+
+  .title {
+    max-width: 100%;
+  }
+
+  .subtitle {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .featureList {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .section {
+    padding: 56px 16px 72px;
+  }
+}

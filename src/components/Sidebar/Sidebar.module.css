@@ -1,0 +1,191 @@
+/* ── Sidebar ────────────────────────────────────── */
+.sidebar {
+  width: 300px;
+  min-width: 220px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* ── Logo ───────────────────────────────────────── */
+.logoWrapper {
+  padding: 0 18px 18px 32px;
+}
+
+.logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── Nav ────────────────────────────────────────── */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding-top: 90px;
+  padding-left: 10PX;
+  /* itens agrupados no topo, logo abaixo da logo */
+}
+
+/* ── Item ───────────────────────────────────────── */
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;         /* border-radius já definido ANTES do hover */
+  text-decoration: none;
+  color: #1A1A1A;
+  font-size: 15px;
+  font-weight: 600;
+
+  /* Transição suave — inclui border-radius para não piscar */
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Item ativo ─────────────────────────────────── */
+.navItemActive {
+  background: #368BFF !important;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.navItemActive:hover {
+  background: #2a7ff0 !important;
+}
+
+/* ── Barra lateral azul (quando ativo) ──────────── */
+.activeBar {
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 55%;
+  background-color: #ffffff;
+  border-radius: 0 4px 4px 0;
+}
+
+/* ── Wrapper do ícone — tamanho FIXO ────────────── */
+/* Isso evita que a troca de imagem desloque o layout */
+.iconWrapper {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Ícone — sempre o mesmo tamanho ─────────────── */
+.navIcon {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  display: block;
+  /* força todos os ícones ao mesmo espaço visual */
+  min-width: 52px;
+  min-height: 52px;
+}
+
+.navLabel {
+  white-space: nowrap;
+  font-size: 22px;
+}
+
+/* ── Responsivo ─────────────────────────────────── */
+
+/* Tablet — sidebar menor com só ícones */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 72px;
+    min-width: 72px;
+    padding: 24px 8px;
+    align-items: center;
+  }
+
+  .logoWrapper {
+    padding: 0 0 28px;
+  }
+
+  .logo {
+    height: 22px;
+  }
+
+  .navItem {
+    justify-content: center;
+    padding: 12px;
+    gap: 0;
+    width: 56px;
+  }
+
+  .navLabel {
+    display: none;
+  }
+
+  .activeBar {
+    left: -8px;
+  }
+}
+
+/* Mobile — sidebar vira bottom bar */
+@media (max-width: 600px) {
+  .sidebar {
+    width: 100%;
+    min-width: unset;
+    height: 64px;
+    flex-direction: row;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: unset;
+    padding: 0 8px;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .logoWrapper {
+    display: none;
+  }
+
+  .nav {
+    flex-direction: row;
+    gap: 0;
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .navItem {
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .navLabel {
+    display: block;
+    font-size: 10px;
+  }
+
+  .activeBar {
+    display: none;
+  }
+}

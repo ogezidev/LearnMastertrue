@@ -1,0 +1,211 @@
+.page {
+  min-height: 100vh;
+  background: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ─────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #368BFF;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: opacity 0.15s ease;
+}
+
+.backBtn:hover {
+  opacity: 0.7;
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 800;
+  color: #111111;
+}
+
+.headerSpacer {
+  width: 60px;
+}
+
+/* ── Main ────────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 24px 40px;
+}
+
+.title {
+  font-size: 42px;
+  font-weight: 800;
+  color: #368BFF;
+  margin: 0 0 40px;
+  text-align: center;
+}
+
+/* ── Form Card ───────────────────────────────── */
+.formCard {
+  background: #368BFF;
+  border-radius: 22px;
+  padding: 40px 44px;
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 12px 30px rgba(54, 139, 255, 0.25);
+}
+
+.formTitle {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  text-align: center;
+}
+
+.formSubtitle {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Select ──────────────────────────────────── */
+.selectWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.selectLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.select {
+  width: 100%;
+  background: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  font-weight: 600;
+  color: #111111;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23368BFF' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.select:focus {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+/* ── Textarea ────────────────────────────────── */
+.inputWrapper {
+  position: relative;
+  margin-top: 8px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 130px;
+  background: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 18px 20px 36px;
+  font-size: 17px;
+  font-family: inherit;
+  font-weight: 500;
+  color: #111111;
+  resize: none;
+  box-sizing: border-box;
+  outline: none;
+  transition: box-shadow 0.2s ease;
+}
+
+.textarea:focus {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+.textarea::placeholder {
+  color: #b0b7c3;
+}
+
+.counter {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b0b7c3;
+  pointer-events: none;
+}
+
+/* ── Button ──────────────────────────────────── */
+.continueBtn {
+  margin-top: 28px;
+  background: #368BFF;
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 18px 0;
+  width: 100%;
+  max-width: 680px;
+  font-size: 20px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 8px 20px rgba(54, 139, 255, 0.3);
+}
+
+.continueBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(54, 139, 255, 0.4);
+}
+
+.continueBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Empty state ─────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.emptyMsg {
+  font-size: 18px;
+  font-weight: 600;
+  color: #555;
+  margin: 0;
+}

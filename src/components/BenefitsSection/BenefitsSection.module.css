@@ -1,0 +1,106 @@
+.benefitsSection {
+  width: 100%;
+  padding: 64px 0 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px 72px;
+  display: flex;
+  align-items: flex-start;
+  gap: 80px;
+}
+
+.titleCol {
+  flex: 0 0 420px;
+}
+
+.title {
+  font-size: clamp(32px, 3.5vw, 52px);
+  font-weight: 800;
+  color: #111111;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.contentCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding-top: 8px;
+}
+
+.description {
+  font-size: 15px;
+  color: #3a3a3a;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.benefitsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 40px;
+}
+
+.benefitItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15px;
+  color: #1a1a1a;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.arrow {
+  color: #2563EB;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.peopleImageWrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.peopleImage {
+  width: 100%;
+  max-width: 2000px;
+  height: 280px;
+}
+
+@media (max-width: 960px) {
+  .container {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .titleCol {
+    flex: unset;
+  }
+
+  .benefitsList {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 20px 48px;
+  }
+
+  .peopleImageWrapper {
+    padding: 0 20px;
+  }
+}
+

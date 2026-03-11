@@ -1,0 +1,110 @@
+/* ── Seção ─────────────────────────────────────── */
+.section {
+  width: 100%;
+  padding: 80px 40px 96px;
+  box-sizing: border-box;
+}
+
+/* ── Cabeçalho ─────────────────────────────────── */
+.header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 30px;
+}
+
+.title {
+  font-size: clamp(32px, 3.5vw, 52px);
+  font-weight: 800;
+  color: #111111;
+  line-height: 1.15;
+  margin: 0 0 20px;
+}
+
+.subtitle {
+  font-size: 17px;
+  color: #555555;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Grid de cards ─────────────────────────────── */
+.cardsRow {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 52px;
+}
+
+/* ── Card ──────────────────────────────────────── */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 28px;
+  border-radius: 20px;
+  background: #ffffff;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: default;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+}
+
+/* Wrapper da imagem — altura fixa para alinhar os 3 cards */
+.cardImageWrapper {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 23px;
+}
+
+.cardImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Textos */
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.cardSubtitle {
+  font-size: 14px;
+  color: #666666;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Responsivo ────────────────────────────────── */
+@media (max-width: 860px) {
+  .cardsRow {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+  }
+}
+
+@media (max-width: 480px) {
+  .section {
+    padding: 56px 16px 72px;
+  }
+
+  .header {
+    margin-bottom: 44px;
+  }
+}
