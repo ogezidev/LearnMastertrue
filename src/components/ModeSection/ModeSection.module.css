@@ -257,3 +257,38 @@
     padding: 32px 20px;
   }
 }
+
+/* ── Dark Mode ───────────────────────────────── */
+:global(html[data-dark="true"]) .mainTitle {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .mainSubtitle {
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .modeBtn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+:global(html[data-dark="true"]) .panelTitle {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .panelSubtitle {
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .accordionLabel {
+  color: #cbd5e1;
+}
+
+:global(html[data-dark="true"]) .accordionText {
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .imageBlock {
+  background: rgba(255,255,255,0.06);
+}

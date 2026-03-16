@@ -1,0 +1,254 @@
+/* ── Overlay ─────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 24px;
+  animation: fadeIn 0.3s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal ───────────────────────────────────── */
+.modal {
+  background: #ffffff;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 40px 100px rgba(17, 24, 39, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: modalIn 0.4s cubic-bezier(0.34, 1.15, 0.64, 1) both;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.82) translateY(28px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* ── Icon Header ─────────────────────────────── */
+.iconWrap {
+  width: 100%;
+  padding: 40px 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  animation: iconIn 0.45s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+  animation-delay: 0.08s;
+}
+
+@keyframes iconIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+.emoji {
+  font-size: 72px;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.22));
+  animation: emojiBounce 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  animation-delay: 0.15s;
+}
+
+@keyframes emojiBounce {
+  from { transform: scale(0.5) rotate(-10deg); }
+  to   { transform: scale(1)   rotate(0deg);   }
+}
+
+.iconGlow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Step Content (re-animated on key change) ── */
+.stepContent {
+  animation: stepIn 0.3s cubic-bezier(0.34, 1.1, 0.64, 1) both;
+  animation-delay: 0.05s;
+}
+
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+/* ── Text Content ────────────────────────────── */
+.content {
+  padding: 28px 32px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.description {
+  font-size: 15px;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* ── Progress Dots ───────────────────────────── */
+.dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0 20px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.1, 0.64, 1);
+}
+
+.dot:hover:not(.dotActive) {
+  background: #d1d5db;
+  transform: scale(1.15);
+}
+
+.dotActive {
+  width: 28px;
+  border-radius: 4px;
+}
+
+/* ── Actions ─────────────────────────────────── */
+.actions {
+  padding: 0 24px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+}
+
+.skipBtn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 8px 4px;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+}
+
+.skipBtn:hover {
+  color: #6b7280;
+}
+
+.navBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.prevBtn {
+  background: #f3f4f6;
+  border: none;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 12px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.prevBtn:hover {
+  background: #e5e7eb;
+  transform: translateX(-2px);
+}
+
+.nextBtn {
+  border: none;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: inherit;
+  padding: 12px 24px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(54, 139, 255, 0.3);
+  white-space: nowrap;
+}
+
+.nextBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(54, 139, 255, 0.4);
+}
+
+/* ── Dark Mode ───────────────────────────────── */
+:global(html[data-dark="true"]) .modal {
+  background: #1e293b;
+}
+
+:global(html[data-dark="true"]) .title {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .description {
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .dot {
+  background: #334155;
+}
+
+:global(html[data-dark="true"]) .dot:hover:not(.dotActive) {
+  background: #3d4f68;
+}
+
+:global(html[data-dark="true"]) .prevBtn {
+  background: #334155;
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .prevBtn:hover {
+  background: #3d4f68;
+}
+
+:global(html[data-dark="true"]) .skipBtn {
+  color: #475569;
+}
+
+:global(html[data-dark="true"]) .skipBtn:hover {
+  color: #64748b;
+}

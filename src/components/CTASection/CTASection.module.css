@@ -53,3 +53,8 @@
     gap: 28px;
   }
 }
+
+/* ── Dark Mode ───────────────────────────────── */
+:global(html[data-dark="true"]) .title {
+  color: #e2e8f0;
+}

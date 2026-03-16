@@ -23,3 +23,18 @@ body {
   width: 100%;
   overflow-x: hidden;
 }
+
+/* ── Dark mode (global shell) ─────────────────────── */
+html[data-dark="true"] body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+/* ── Dyslexia font ────────────────────────────────── */
+body.dyslexia-font,
+body.dyslexia-font * {
+  font-family: 'Courier New', 'Lucida Console', monospace !important;
+  letter-spacing: 0.04em;
+  word-spacing: 0.12em;
+  line-height: 1.75;
+}

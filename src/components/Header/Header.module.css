@@ -64,3 +64,13 @@
   }
 }
 
+/* ── Dark Mode ───────────────────────────────── */
+:global(html[data-dark="true"]) .header {
+  background-color: #1e293b;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+:global(html[data-dark="true"]) .navLink {
+  color: #93c5fd;
+}
+

@@ -23,12 +23,13 @@
   font-family: inherit;
   color: #368BFF;
   cursor: pointer;
-  padding: 6px 0;
-  transition: opacity 0.15s ease;
+  padding: 7px 12px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
 }
 
 .backBtn:hover {
-  opacity: 0.7;
+  background: rgba(54, 139, 255, 0.1);
 }
 
 .logo {
@@ -69,6 +70,12 @@
   flex-direction: column;
   gap: 12px;
   box-shadow: 0 12px 30px rgba(54, 139, 255, 0.25);
+  animation: cardIn 0.35s cubic-bezier(0.34, 1.1, 0.64, 1) both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)     scale(1);   }
 }
 
 .formTitle {
@@ -152,4 +159,119 @@
 .continueBtn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* ── Dark Mode ───────────────────────────────── */
+:global(html[data-dark="true"]) .page {
+  background: #0f172a;
+}
+
+:global(html[data-dark="true"]) .header {
+  background: #1e293b;
+  border-color: rgba(255,255,255,0.08);
+}
+
+:global(html[data-dark="true"]) .logo {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .backBtn {
+  color: #93c5fd;
+}
+
+:global(html[data-dark="true"]) .title {
+  color: #93c5fd;
+}
+
+:global(html[data-dark="true"]) .formCard {
+  background: #1e3a8a;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+}
+
+:global(html[data-dark="true"]) .textarea {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .textarea::placeholder {
+  color: #475569;
+}
+
+:global(html[data-dark="true"]) .counter {
+  color: #475569;
+}
+
+/* ── Step indicator ──────────────────────────── */
+.header {
+  position: relative;
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.stepActive {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #368BFF;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepInactive {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.1);
+  color: #999;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepDivider {
+  color: #ccc;
+  font-size: 12px;
+}
+
+.stepLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #368BFF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.stepHint {
+  font-size: 13px;
+  color: #999;
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+:global(html[data-dark="true"]) .stepLabel {
+  color: #93c5fd;
+}
+
+:global(html[data-dark="true"]) .stepHint {
+  color: #64748b;
+}
+
+:global(html[data-dark="true"]) .stepInactive {
+  background: rgba(255,255,255,0.1);
+  color: #64748b;
 }

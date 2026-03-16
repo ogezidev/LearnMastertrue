@@ -17,8 +17,9 @@ const EstudarPage = () => {
   const deck = decks.find((d) => d.id === Number(deckId));
   const cards = deck?.cards ?? [];
 
-  const [index, setIndex] = useState(0);
-  const [flipped, setFlipped] = useState(false);
+  const [index,          setIndex]          = useState(0);
+  const [flipped,        setFlipped]        = useState(false);
+  const [sessionRatings, setSessionRatings] = useState({});
 
   if (!deck || cards.length === 0) {
     return (
@@ -40,10 +41,14 @@ const EstudarPage = () => {
   };
 
   const handleRate = (rating) => {
+    const newRatings = { ...sessionRatings, [card.id]: rating };
+    setSessionRatings(newRatings);
     rateCard(card.id, rating);
     updateProgresso({ ultimoDeckId: deck.id, ultimoCardId: card.id });
     if (isLast) {
-      navigate(`/memorizar/${deckId}`);
+      navigate(`/memorizar/${deckId}/concluido`, {
+        state: { deckNome: deck.nome, total: cards.length, ratings: newRatings },
+      });
       return;
     }
     setFlipped(false);
@@ -63,7 +68,7 @@ const EstudarPage = () => {
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <button className={styles.headerBtn} onClick={() => navigate(`/memorizar/${deckId}`)}>
-            ← Voltar
+            Voltar
           </button>
         </div>
 
@@ -109,7 +114,7 @@ const EstudarPage = () => {
             onClick={handlePrev}
             disabled={index === 0}
           >
-            ← Anterior
+            Anterior
           </button>
 
           <div className={styles.ratingBtns}>

@@ -148,3 +148,24 @@
     padding: 56px 16px 72px;
   }
 }
+
+/* ── Dark Mode ───────────────────────────────── */
+:global(html[data-dark="true"]) .title {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .subtitle {
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .featureTitle {
+  color: #93c5fd;
+}
+
+:global(html[data-dark="true"]) .featureSubtitle {
+  color: #93c5fd;
+}
+
+:global(html[data-dark="true"]) .featureDescription {
+  color: #64748b;
+}

@@ -53,7 +53,7 @@
 }
 
 .navItem:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(54, 139, 255, 0.1);
 }
 
 /* ── Item ativo ─────────────────────────────────── */
@@ -188,4 +188,17 @@
   .activeBar {
     display: none;
   }
+}
+
+:global(html[data-dark="true"]) .sidebar {
+  background-color: #1e293b;
+  border-right: 1px solid #2d3f56;
+}
+
+:global(html[data-dark="true"]) .navItem {
+  color: #cbd5e1;
+}
+
+:global(html[data-dark="true"]) .navItem:hover {
+  background: rgba(255, 255, 255, 0.08);
 }

@@ -108,3 +108,24 @@
     margin-bottom: 44px;
   }
 }
+
+/* ── Dark Mode ───────────────────────────────── */
+:global(html[data-dark="true"]) .title {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .subtitle {
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .card {
+  background: #1e293b;
+}
+
+:global(html[data-dark="true"]) .cardTitle {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .cardSubtitle {
+  color: #64748b;
+}

@@ -85,3 +85,20 @@
   }
 }
 
+/* ── Dark Mode ───────────────────────────────── */
+:global(html[data-dark="true"]) .description {
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .blockTitle {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .blockSubtitle {
+  color: #64748b;
+}
+
+:global(html[data-dark="true"]) .divider {
+  background-color: #334155;
+}
+

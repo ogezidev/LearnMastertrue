@@ -1,16 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useApp } from '@/context/AppContext';
 import Header from '@/components/Header/Header';
 import styles from './LoginPage.module.css';
 import imgLogin from '@/assets/images/ImagemLogin.png';
 
 const LoginPage = () => {
-  const [lembrar, setLembrar] = useState(false);
+  const { login, user } = useApp();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (user) navigate('/app', { replace: true });
+  }, [user, navigate]);
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [lembrar, setLembrar] = useState(false);
+  const [erro, setErro] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate('/app');
+    if (!email.trim() || !senha.trim()) return;
+    setErro('');
+    setLoading(true);
+    try {
+      await login(email.trim(), senha.trim(), lembrar);
+      navigate('/app');
+    } catch {
+      setErro('E-mail ou senha incorretos.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,6 +53,9 @@ const LoginPage = () => {
                   type="email"
                   className={styles.input}
                   placeholder="Email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
                 />
               </div>
 
@@ -41,11 +64,16 @@ const LoginPage = () => {
                   type="password"
                   className={styles.input}
                   placeholder="Senha"
+                  value={senha}
+                  onChange={e => setSenha(e.target.value)}
+                  required
                 />
               </div>
 
-              <button type="submit" className={styles.btnEntrar}>
-                Entrar
+              {erro && <p className={styles.erro}>{erro}</p>}
+
+              <button type="submit" className={styles.btnEntrar} disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
               </button>
 
               <div className={styles.formFooter}>
@@ -58,7 +86,7 @@ const LoginPage = () => {
                   />
                   Continuar logado
                 </label>
-                <a href="#" className={styles.linkEsqueceu}>Esqueceu a senha?</a>
+                <Link to="/esqueceu-senha" className={styles.linkEsqueceu}>Esqueceu a senha?</Link>
               </div>
             </form>
 
@@ -68,7 +96,7 @@ const LoginPage = () => {
             </p>
           </div>
 
-          {/* Coluna direita — card azul */}
+          {/* Coluna direita — imagem */}
           <div className={styles.imageCol}>
             <img
               src={imgLogin}

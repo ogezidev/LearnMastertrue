@@ -13,7 +13,7 @@ const IntroPage = () => {
   if (!deck || deck.cards.length === 0) {
     return (
       <div className={styles.page}>
-        <button className={styles.backBtn} onClick={() => navigate('/app')}>← Voltar</button>
+        <button className={styles.backBtn} onClick={() => navigate('/app')}>Voltar</button>
         <div className={styles.center}>
           <p className={styles.emptyMsg}>Este deck não tem flashcards ainda.</p>
           <button className={styles.studyBtn} onClick={() => navigate('/app/criar')}>
@@ -26,7 +26,7 @@ const IntroPage = () => {
 
   return (
     <div className={styles.page}>
-      <button className={styles.backBtn} onClick={() => navigate('/app')}>← Voltar</button>
+      <button className={styles.backBtn} onClick={() => navigate('/app')}>Voltar</button>
 
       <div className={styles.center}>
         {mainDeck && (

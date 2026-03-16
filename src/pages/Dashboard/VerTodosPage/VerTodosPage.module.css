@@ -1,3 +1,4 @@
+/* ── Page ────────────────────────────────────────── */
 .page {
   padding: 26px 28px;
   width: 100%;
@@ -5,59 +6,82 @@
   height: 100%;
 }
 
-/* ── Container — mesmo padrão do heroCard ──────── */
+/* ── Container ───────────────────────────────────── */
 .mainCard {
   border-radius: 22px;
   width: 100%;
   height: 100%;
   max-width: 1420px;
-  max-height: 600px;
-  margin: 100px auto 0;
+  max-height: 720px;
+  margin: 60px auto 0;
   box-sizing: border-box;
   box-shadow: 0 12px 30px rgba(17, 24, 39, 0.14);
   overflow: hidden;
   background: #368BFF;
   display: flex;
   flex-direction: column;
+  animation: cardIn 0.35s cubic-bezier(0.34, 1.1, 0.64, 1) both;
 }
 
-/* ── Header ─────────────────────────────────────── */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)     scale(1);   }
+}
+
+/* ── Header ──────────────────────────────────────── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 28px;
-  height: 70px;
+  height: 72px;
   flex-shrink: 0;
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.18);
 }
 
-.headerSide {
-  width: 110px;
+.headerLeft {
+  width: 120px;
   display: flex;
   align-items: center;
 }
 
-.headerSide:last-child {
+.headerCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.headerRight {
+  width: 120px;
+  display: flex;
+  align-items: center;
   justify-content: flex-end;
 }
 
+.breadcrumb {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.02em;
+}
+
 .headerTitle {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   color: #ffffff;
   margin: 0;
   text-align: center;
-  flex: 1;
   letter-spacing: -0.3px;
 }
 
 /* ── Back Button ─────────────────────────────────── */
 .backBtn {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.14);
   border: none;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -68,35 +92,66 @@
 }
 
 .backBtn:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* ── Header Actions ──────────────────────────────── */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notasBtn {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1.5px solid transparent;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.notasBtn:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.notasBtnActive {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* ── Play Button ─────────────────────────────────── */
 .playBtn {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   background: #ffffff;
   border: none;
   border-radius: 50%;
   color: #368BFF;
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-left: 3px; /* optical center for ▶ */
+  padding-left: 2px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
 }
 
 .playBtn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
 }
 
 /* ── Create Button ───────────────────────────────── */
 .createBtn {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.14);
   border: none;
   color: #ffffff;
   font-size: 13px;
@@ -110,18 +165,144 @@
 }
 
 .createBtn:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* ── Toolbar ─────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 24px 0;
+  flex-shrink: 0;
+}
+
+/* ── Search ──────────────────────────────────────── */
+.searchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.searchInput {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 9px 36px 9px 40px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #ffffff;
+  outline: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.searchInput:focus {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.searchClear {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+/* ── Filter Chips ────────────────────────────────── */
+.filterChips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  animation: fadeDown 0.2s ease both;
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.chip {
+  border: none;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+  opacity: 0.7;
+}
+
+.chip:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.chipActive {
+  opacity: 1 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.chip_all {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.chip_lembro {
+  background: rgba(34, 197, 94, 0.85);
+  color: #ffffff;
+}
+
+.chip_lembro_pouco {
+  background: rgba(59, 130, 246, 0.85);
+  color: #ffffff;
+}
+
+.chip_esqueci {
+  background: rgba(239, 68, 68, 0.85);
+  color: #ffffff;
+}
+
+.chipCount {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 /* ── Grid Wrapper ────────────────────────────────── */
 .gridWrapper {
   flex: 1;
   overflow-y: auto;
-  padding: 28px 28px;
+  padding: 20px 24px 24px;
 }
 
 .gridWrapper::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 .gridWrapper::-webkit-scrollbar-track {
@@ -129,101 +310,241 @@
 }
 
 .gridWrapper::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
 }
 
-/* ── Grid ────────────────────────────────────────── */
-.grid {
+/* ── Album Grid (LearnDecks / Decks) ────────────── */
+.albumGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 16px;
 }
 
-/* ── Flashcard action row ─────────────────────────── */
-.flashcardActions {
+.albumTile {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.22s ease;
+  animation: tileIn 0.38s cubic-bezier(0.34, 1.1, 0.64, 1) both;
+}
+
+@keyframes tileIn {
+  from { opacity: 0; transform: scale(0.88) translateY(12px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+.albumTile:hover {
+  transform: scale(1.05) translateY(-5px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.albumCover {
+  width: 100%;
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
 }
 
-/* ── Filter Button ───────────────────────────────── */
-.filterBtn {
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 8px;
-  transition: background 0.15s ease;
+.albumInitial {
+  font-size: 56px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -2px;
+  user-select: none;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+}
+
+.albumInfo {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.albumName {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111111;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.filterBtn:hover {
-  background: rgba(255, 255, 255, 0.25);
+.albumMeta {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
 }
 
-.filterBtnActive {
-  background: rgba(255, 255, 255, 0.3);
+.albumActions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
 
-/* ── Item Card ───────────────────────────────────── */
-.itemCard {
+.albumTile:hover .albumActions {
+  opacity: 1;
+}
+
+.tileEditBtn {
+  background: rgba(255, 255, 255, 0.92);
+  color: #368BFF;
+  border: none;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  backdrop-filter: blur(4px);
+}
+
+.tileEditBtn:hover {
+  background: #ffffff;
+}
+
+.tileDeleteBtn {
+  background: rgba(255, 255, 255, 0.92);
+  color: #e03b3b;
+  border: none;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  backdrop-filter: blur(4px);
+}
+
+.tileDeleteBtn:hover {
+  background: #ffffff;
+}
+
+/* ── Flashcard Grid ──────────────────────────────── */
+.flashGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+/* ── Flashcard Card ──────────────────────────────── */
+.flashCard {
   background: #ffffff;
   border-radius: 14px;
-  padding: 24px 24px;
-  cursor: pointer;
+  padding: 18px 18px 16px;
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  aspect-ratio: 3 / 2;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.4s ease;
+  gap: 10px;
+  min-height: 130px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.35s ease;
+  overflow: visible;
+  animation: tileIn 0.35s cubic-bezier(0.34, 1.1, 0.64, 1) both;
 }
 
-.itemCard:hover {
+.flashCard:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.13);
 }
 
-.itemCardFlash {
-  cursor: default;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+.cardIndex {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c4c9d4;
+  letter-spacing: 0.04em;
 }
 
-.itemCardFlash:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-/* ── Item Content ────────────────────────────────── */
-.itemName {
-  font-size: 18px;
-  font-weight: 800;
+.flashName {
+  font-size: 15px;
+  font-weight: 700;
   color: #368BFF;
-  line-height: 1.3;
-  padding-right: 20px;
+  line-height: 1.45;
+  margin: 0;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.itemMeta {
-  font-size: 13px;
+.cardHint {
+  font-size: 11px;
   font-weight: 600;
-  color: #b0b7c3;
+  color: #c4c9d4;
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+}
+
+/* ── Row Actions (edit + delete) ─────────────────── */
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.listRow:hover .rowActions {
+  opacity: 1;
+}
+
+.cardActions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.flashCard:hover .cardActions {
+  opacity: 1;
+}
+
+/* ── Edit Button ─────────────────────────────────── */
+.editBtn {
+  background: transparent;
+  color: #a0a8b8;
+  border: none;
+  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.editBtn:hover {
+  background: #e8f0ff;
+  color: #368BFF;
 }
 
 /* ── Delete Button ───────────────────────────────── */
 .deleteBtn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
   background: transparent;
-  color: #ccc;
+  color: #a0a8b8;
   border: none;
   border-radius: 6px;
   width: 22px;
@@ -234,17 +555,192 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
-}
-
-.itemCard:hover .deleteBtn {
-  opacity: 1;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .deleteBtn:hover {
   background: #ffe0e0;
   color: #e03b3b;
+}
+
+/* ── Modal Overlay ───────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.18s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal ───────────────────────────────────────── */
+.modal {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 24px 60px rgba(17, 24, 39, 0.2);
+  overflow: hidden;
+  animation: slideUp 0.22s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)     scale(1);    }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px 0;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0;
+}
+
+.modalClose {
+  background: #f3f4f6;
+  border: none;
+  color: #6b7280;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.modalClose:hover {
+  background: #e5e7eb;
+}
+
+.modalBody {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modalLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modalInput {
+  width: 100%;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #111111;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.modalInput:focus {
+  border-color: #368BFF;
+}
+
+.modalTextarea {
+  width: 100%;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #111111;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.modalTextarea:focus {
+  border-color: #368BFF;
+}
+
+.modalTextareaVerso {
+  border-color: #c3d9ff;
+  background: #f0f6ff;
+}
+
+.modalTextareaVerso:focus {
+  border-color: #368BFF;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 10px;
+  padding: 0 24px 22px;
+  justify-content: flex-end;
+}
+
+.modalCancel {
+  background: #f3f4f6;
+  border: none;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 10px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.modalCancel:hover {
+  background: #e5e7eb;
+}
+
+.modalSave {
+  background: #368BFF;
+  border: none;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 10px 28px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.modalSave:hover {
+  background: #2f7de8;
+  transform: translateY(-1px);
+}
+
+/* ── No Results ──────────────────────────────────── */
+.noResults {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  padding: 40px 0;
+  margin: 0;
 }
 
 /* ── Empty State ─────────────────────────────────── */
@@ -272,7 +768,7 @@
   border: none;
   border-radius: 12px;
   padding: 12px 36px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   font-family: inherit;
   cursor: pointer;
@@ -286,30 +782,357 @@
 
 /* ── Rating Colors ───────────────────────────────── */
 .ratingGreen {
-  background-color: rgba(34, 197, 94, 0.35);
+  background-color: rgba(22, 163, 74, 0.82) !important;
 }
 
 .ratingBlue {
-  background-color: rgba(54, 139, 255, 0.3);
+  background-color: rgba(37, 99, 235, 0.82) !important;
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: -2px;
 }
 
 .ratingRed {
-  background-color: rgba(239, 68, 68, 0.3);
+  background-color: rgba(220, 38, 38, 0.82) !important;
+}
+
+.ratingGreen *,
+.ratingBlue *,
+.ratingRed * {
+  color: white !important;
+}
+
+/* ── Rating Label ────────────────────────────────── */
+.ratingLabel {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  animation: labelPop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.ratingLabelGreen { color: rgb(22, 163, 74) !important; }
+.ratingLabelBlue  { color: rgb(37, 99, 235) !important; }
+.ratingLabelRed   { color: rgb(220, 38, 38) !important; }
+
+@keyframes labelPop {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px) scale(0.85); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0)   scale(1);    }
+}
+
+/* ── Zoom Modal — Modo Janela ────────────────────── */
+.zoomOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.18s ease both;
+  padding: 24px;
+}
+
+.zoomModal {
+  background: #ffffff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 32px 80px rgba(17, 24, 39, 0.3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: zoomIn 0.28s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.8) translateY(18px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0);    }
+}
+
+.zoomHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1.5px solid #f0f1f3;
+}
+
+.zoomIndex {
+  font-size: 13px;
+  font-weight: 800;
+  color: #c4c9d4;
+  letter-spacing: 0.04em;
+}
+
+.zoomHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zoomEditBtn {
+  background: rgba(54, 139, 255, 0.1);
+  border: none;
+  color: #368BFF;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.zoomEditBtn:hover {
+  background: rgba(54, 139, 255, 0.18);
+}
+
+.zoomDeleteBtn {
+  background: rgba(239, 68, 68, 0.08);
+  border: none;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.zoomDeleteBtn:hover {
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.zoomCloseBtn {
+  background: #f3f4f6;
+  border: none;
+  color: #6b7280;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.zoomCloseBtn:hover {
+  background: #e5e7eb;
+}
+
+.zoomBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.zoomFrente {
+  padding: 28px 28px 24px;
+  background: #f8f9ff;
+  border-bottom: 1.5px solid #e8ecff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zoomSideLabel {
+  font-size: 11px;
+  font-weight: 800;
+  color: #368BFF;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.zoomSideLabelVerso {
+  font-size: 11px;
+  font-weight: 800;
+  color: #7c3aed;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.zoomText {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111111;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.zoomTextVerso {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.zoomVerso {
+  padding: 24px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: versoIn 0.25s cubic-bezier(0.34, 1.1, 0.64, 1) both;
+}
+
+@keyframes versoIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.revealBtn {
+  margin: 20px 28px 28px;
+  background: #368BFF;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 0;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(54, 139, 255, 0.3);
+}
+
+.revealBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(54, 139, 255, 0.4);
 }
 
 /* ── Responsivo ──────────────────────────────────── */
 @media (max-width: 960px) {
-  .mainCard {
-    max-height: unset;
-  }
-
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .mainCard   { max-height: unset; }
+  .flashGrid  { grid-template-columns: repeat(2, 1fr); }
+  .albumGrid  { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
 }
 
 @media (max-width: 600px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+  .flashGrid { grid-template-columns: 1fr; }
+  .albumGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Dark Mode ───────────────────────────────────── */
+:global(html[data-dark="true"]) .mainCard {
+  background: #1e3a8a;
+}
+
+:global(html[data-dark="true"]) .albumTile {
+  background: #1e293b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+:global(html[data-dark="true"]) .albumName {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .albumMeta {
+  color: #64748b;
+}
+
+:global(html[data-dark="true"]) .tileEditBtn,
+:global(html[data-dark="true"]) .tileDeleteBtn {
+  background: rgba(30, 41, 59, 0.92);
+}
+
+:global(html[data-dark="true"]) .tileEditBtn:hover {
+  background: #253045;
+}
+
+:global(html[data-dark="true"]) .tileDeleteBtn:hover {
+  background: #253045;
+}
+
+:global(html[data-dark="true"]) .flashCard {
+  background: #1e293b;
+}
+
+:global(html[data-dark="true"]) .flashName {
+  color: #93c5fd;
+}
+
+:global(html[data-dark="true"]) .cardIndex,
+:global(html[data-dark="true"]) .cardHint {
+  color: #475569;
+}
+
+:global(html[data-dark="true"]) .modal {
+  background: #1e293b;
+}
+
+:global(html[data-dark="true"]) .modalTitle {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .modalInput,
+:global(html[data-dark="true"]) .modalTextarea {
+  background: #253045;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .modalLabel {
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .modalClose {
+  background: #334155;
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .modalClose:hover {
+  background: #3d4f68;
+}
+
+:global(html[data-dark="true"]) .modalTextareaVerso {
+  background: #1a3050;
+  border-color: #3b82f6;
+}
+
+/* ── Dark Mode — Zoom Modal ──────────────────────── */
+:global(html[data-dark="true"]) .zoomModal {
+  background: #1e293b;
+}
+
+:global(html[data-dark="true"]) .zoomHeader {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+:global(html[data-dark="true"]) .zoomFrente {
+  background: #253045;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+:global(html[data-dark="true"]) .zoomText {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .zoomTextVerso {
+  color: #cbd5e1;
+}
+
+:global(html[data-dark="true"]) .zoomVerso {
+  background: #1e293b;
+}
+
+:global(html[data-dark="true"]) .zoomCloseBtn {
+  background: #334155;
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .zoomCloseBtn:hover {
+  background: #3d4f68;
 }

@@ -13,9 +13,7 @@ const Header = () => {
         </div>
         <nav className={styles.nav}>
           <Link to="/contato" className={styles.navLink}>contato</Link>
-          <a href="#quem-somos" className={styles.navLink}>
-            quem somos
-          </a>
+          <Link to="/quem-somos" className={styles.navLink}>quem somos</Link>
           <Link to="/entrar" className={styles.btnEntrar}>Entrar</Link>
 
         </nav>

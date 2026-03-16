@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import styles from './Footer.module.css';
 import logo from '@/assets/images/LearnMasterAzul.png';
 
@@ -18,9 +19,9 @@ const Footer = () => (
           © {new Date().getFullYear()} LearnMaster. Todos os direitos reservados.
         </p>
         <div className={styles.links}>
-          <a href="#contato" className={styles.link}>Contato</a>
-          <a href="#quem-somos" className={styles.link}>Quem somos</a>
-          <a href="#entrar" className={styles.link}>Entrar</a>
+          <Link to="/contato" className={styles.link}>Contato</Link>
+          <Link to="/quem-somos" className={styles.link}>Quem somos</Link>
+          <Link to="/entrar" className={styles.link}>Entrar</Link>
         </div>
       </div>
 

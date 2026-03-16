@@ -1,0 +1,286 @@
+/* ── Page ────────────────────────────────────────── */
+.page {
+  padding: 26px 28px;
+  width: 100%;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+/* ── Container (padrão idêntico ao heroCard/mainCard) */
+.mainCard {
+  border-radius: 22px;
+  width: 100%;
+  height: 100%;
+  max-width: 1420px;
+  max-height: 720px;
+  margin: 100px auto 0;
+  box-sizing: border-box;
+  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.14);
+  background: #368BFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: visible;
+  position: relative;
+  animation: cardIn 0.4s cubic-bezier(0.34, 1.1, 0.64, 1) both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)     scale(1);   }
+}
+
+/* ── Avatar (flutua acima do container) ──────────── */
+.avatarWrap {
+  position: absolute;
+  top: -90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  cursor: pointer;
+}
+
+.avatarRing {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: #d0e6ff;
+  border: 6px solid #ffffff;
+  box-shadow: 0 12px 48px rgba(54, 139, 255, 0.32);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.2s ease;
+}
+
+.avatarWrap:hover .avatarRing {
+  box-shadow: 0 12px 56px rgba(54, 139, 255, 0.52);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInitials {
+  font-size: 64px;
+  font-weight: 800;
+  color: #368BFF;
+  letter-spacing: -2px;
+  user-select: none;
+}
+
+/* Overlay câmera no hover */
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(17, 24, 39, 0.52);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.avatarWrap:hover .avatarOverlay {
+  opacity: 1;
+}
+
+.avatarOverlay span {
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.03em;
+}
+
+.fileInput {
+  display: none;
+}
+
+/* ── Conteúdo interno ────────────────────────────── */
+.cardContent {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 112px 56px 44px;
+  box-sizing: border-box;
+  gap: 0;
+}
+
+/* ── Nome e email ────────────────────────────────── */
+.userName {
+  font-size: 42px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -1px;
+  text-align: center;
+}
+
+.userEmail {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 8px 0 0;
+  text-align: center;
+}
+
+/* ── Nome editável ───────────────────────────────── */
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nameInput {
+  font-size: 42px;
+  font-weight: 800;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  padding: 2px 14px;
+  outline: none;
+  letter-spacing: -1px;
+  text-align: center;
+  font-family: inherit;
+  max-width: 360px;
+}
+
+.editNameBtn {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.editNameBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.editNameBtnActive {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Botão Sair ──────────────────────────────────── */
+.sairBtn {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 9px 22px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sairBtn:hover {
+  background: rgba(255, 80, 80, 0.25);
+  border-color: rgba(255, 100, 100, 0.4);
+  color: #ffffff;
+}
+
+/* ── Divisor ─────────────────────────────────────── */
+.divider {
+  width: 60px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 99px;
+  margin: 20px auto 18px;
+}
+
+/* ── Stats row ────────────────────────────────────── */
+.statsRow {
+  display: flex;
+  gap: 22px;
+  width: 100%;
+  max-width: 900px;
+  margin-top: 4px;
+}
+
+/* ── Stat tile ────────────────────────────────────── */
+.statTile {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 22px;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.18s ease, transform 0.18s ease;
+  cursor: default;
+  min-height: 180px;
+}
+
+.statTile:hover {
+  background: rgba(255, 255, 255, 0.24);
+  transform: translateY(-4px);
+}
+
+.statIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 62px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+}
+
+.statValue {
+  font-size: 44px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -1.5px;
+}
+
+.statLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+/* ── Dark Mode ───────────────────────────────── */
+:global(html[data-dark="true"]) .mainCard {
+  background: #1e3a8a;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+:global(html[data-dark="true"]) .avatarRing {
+  background: #1e3a8a;
+  border-color: #1e40af;
+}
+
+:global(html[data-dark="true"]) .avatarInitials {
+  color: #93c5fd;
+}

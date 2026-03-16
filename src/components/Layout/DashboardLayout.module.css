@@ -19,3 +19,7 @@
   font-weight: 600;
   color: #aaaaaa;
 }
+
+:global(html[data-dark="true"]) .layout {
+  background-color: #0f172a;
+}
