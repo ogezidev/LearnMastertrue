@@ -201,6 +201,36 @@
   color: #475569;
 }
 
+/* ── Responsivo ─────────────────────────────── */
+@media (max-width: 600px) {
+  .header {
+    padding: 14px 16px;
+  }
+
+  .main {
+    padding: 28px 16px 24px;
+  }
+
+  .title {
+    font-size: 26px;
+    margin-bottom: 24px;
+  }
+
+  .formCard {
+    padding: 24px 20px;
+  }
+
+  .formTitle {
+    font-size: 20px;
+  }
+
+  .continueBtn {
+    font-size: 16px;
+    padding: 14px 0;
+    margin-top: 16px;
+  }
+}
+
 /* ── Step indicator ──────────────────────────── */
 .header {
   position: relative;

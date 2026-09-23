@@ -506,6 +506,33 @@
   text-align: center;
 }
 
+/* ── Responsivo ─────────────────────────────── */
+@media (max-width: 600px) {
+  .header {
+    padding: 14px 16px;
+  }
+
+  .main {
+    padding: 24px 16px;
+    align-items: stretch;
+  }
+
+  .title {
+    font-size: 26px;
+    margin-bottom: 20px;
+  }
+
+  .formCard {
+    padding: 24px 20px;
+  }
+
+  .continueBtn {
+    font-size: 16px;
+    padding: 14px 0;
+    margin-top: 16px;
+  }
+}
+
 /* ── Responsivo sidebar ──────────────────────── */
 @media (max-width: 860px) {
   .layout {

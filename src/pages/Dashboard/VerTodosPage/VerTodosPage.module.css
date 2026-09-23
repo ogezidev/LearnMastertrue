@@ -1021,6 +1021,38 @@
 }
 
 @media (max-width: 600px) {
+  .page {
+    padding: 16px 14px;
+    height: auto;
+    align-items: flex-start;
+  }
+
+  .mainCard {
+    margin: 0;
+    max-height: none;
+    height: calc(100vh - 96px - 32px);
+    border-radius: 18px;
+    width: 100%;
+  }
+
+  .header {
+    padding: 0 14px;
+    height: 56px;
+  }
+
+  .headerLeft,
+  .headerRight {
+    width: auto;
+  }
+
+  .toolbar {
+    padding: 10px 14px 0;
+  }
+
+  .gridWrapper {
+    padding: 14px 14px 14px;
+  }
+
   .flashGrid { grid-template-columns: 1fr; }
   .albumGrid { grid-template-columns: repeat(2, 1fr); }
 }

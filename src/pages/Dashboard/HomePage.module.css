@@ -138,6 +138,7 @@
 }
 
 
+/* ── Tablet ─────────────────────────────────── */
 @media (max-width: 960px) {
   .heroCard {
     flex-direction: column;
@@ -154,11 +155,114 @@
   .heroRight {
     width: 100%;
     align-items: flex-start;
+    margin-right: 0;
   }
 
   .progressCard {
     width: 100%;
     max-width: 360px;
+  }
+}
+
+/* ── Mobile ─────────────────────────────────── */
+@media (max-width: 600px) {
+  .page {
+    padding: 16px 14px;
+    height: auto;
+    min-height: calc(100vh - 96px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .heroCard {
+    width: 100%;
+  }
+
+  .heroCard {
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 0 auto;
+    padding: 22px 18px;
+    gap: 18px;
+    max-height: none;
+    height: auto;
+    border-radius: 18px;
+  }
+
+  .heroLeft {
+    margin-left: 0;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .saudacao {
+    font-size: 16px;
+  }
+
+  .heroTitle {
+    font-size: 26px;
+    margin-top: 0;
+  }
+
+  .heroSubtitle {
+    font-size: 14px;
+    margin-top: -6px;
+    max-width: 100%;
+  }
+
+  .btnMemorizar {
+    font-size: 17px;
+    height: 50px;
+    max-width: 100%;
+    margin-top: 2px;
+  }
+
+  /* Mostra o card mas esconde a imagem grande */
+  .heroRight {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    margin-right: 0;
+  }
+
+  .learnDeckImg {
+    display: none;
+  }
+
+  .progressCard {
+    width: 100%;
+    border-radius: 15px;
+    margin-bottom: 0;
+  }
+
+  .progressCardName {
+    font-size: 20px;
+  }
+
+  /* ── Streak ── */
+  .streakWrap {
+    max-width: 100%;
+    padding: 10px 14px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .streakCount {
+    font-size: 22px;
+  }
+
+  .streakDot {
+    width: 18px;
+    height: 18px;
+  }
+
+  .streakDayLabel {
+    font-size: 9px;
+  }
+
+  .streakDays {
+    gap: 4px;
   }
 }
 

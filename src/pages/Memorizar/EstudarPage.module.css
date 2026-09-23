@@ -294,6 +294,51 @@
   gap: 20px;
 }
 
+/* ── Responsivo ─────────────────────────────── */
+@media (max-width: 600px) {
+  .header {
+    padding: 20px 20px 0;
+    gap: 12px;
+  }
+
+  .headerLeft,
+  .headerRight {
+    flex: 0;
+  }
+
+  .main {
+    padding: 24px 16px 32px;
+    gap: 20px;
+  }
+
+  .cardScene {
+    height: 240px;
+  }
+
+  .cardFront,
+  .cardBack {
+    padding: 24px 24px;
+    border-radius: 18px;
+  }
+
+  .cardText {
+    font-size: 18px;
+  }
+
+  .cardTextBack {
+    font-size: 16px;
+  }
+
+  .ratingBtn {
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+
+  .ratingBtns {
+    gap: 8px;
+  }
+}
+
 /* ── Dark Mode ───────────────────────────────── */
 :global(html[data-dark="true"]) .page {
   background: #0f172a;

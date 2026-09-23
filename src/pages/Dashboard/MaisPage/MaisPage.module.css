@@ -381,6 +381,56 @@
   transform: translateY(-1px);
 }
 
+/* ── Responsivo ─────────────────────────────────── */
+@media (max-width: 600px) {
+  .page {
+    padding: 16px 14px;
+    height: auto;
+    align-items: flex-start;
+  }
+
+  .mainCard {
+    margin: 0;
+    max-height: none;
+    height: calc(100vh - 96px - 32px);
+    border-radius: 18px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .header {
+    padding: 20px 20px 16px;
+  }
+
+  .headerTitle {
+    font-size: 20px;
+  }
+
+  .headerSub {
+    font-size: 13px;
+  }
+
+  .panel {
+    margin: 0 10px 10px;
+  }
+
+  .row {
+    padding: 16px 18px;
+    gap: 14px;
+  }
+
+  .rowIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .form {
+    padding: 20px 18px;
+  }
+}
+
 /* ── Dark Mode ────────────────────────────────────── */
 :global(html[data-dark="true"]) .panel {
   background: #1e293b;

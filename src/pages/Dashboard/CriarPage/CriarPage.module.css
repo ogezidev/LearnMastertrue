@@ -177,6 +177,63 @@
   }
 }
 
+@media (max-width: 600px) {
+  .page {
+    padding: 16px 14px;
+    height: auto;
+    min-height: calc(100vh - 96px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mainCard {
+    margin: 0;
+    max-height: none;
+    height: auto;
+    border-radius: 18px;
+    width: 100%;
+  }
+
+  .mainCardEmpty {
+    padding: 32px 20px;
+    gap: 16px;
+  }
+
+  .emptyTitle {
+    font-size: 24px;
+  }
+
+  .emptySubtitle {
+    font-size: 14px;
+  }
+
+  .emptyBtn {
+    font-size: 16px;
+    padding: 13px 36px;
+  }
+
+  .card {
+    padding: 24px 20px;
+  }
+
+  .cardTitle {
+    font-size: 24px;
+    padding-top: 20px;
+  }
+
+  .cardDesc {
+    font-size: 14px;
+    padding-top: 10px;
+  }
+
+  .cardBtn {
+    font-size: 18px;
+    height: 52px;
+    margin-bottom: 20px;
+  }
+}
+
 /* ── Dark Mode ───────────────────────────────── */
 :global(html[data-dark="true"]) .mainCardEmpty {
   background: #1e3a8a;

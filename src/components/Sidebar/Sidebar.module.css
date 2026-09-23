@@ -144,20 +144,22 @@
 /* Mobile — sidebar vira bottom bar */
 @media (max-width: 600px) {
   .sidebar {
-    width: 100%;
+    width: calc(100% - 32px);
     min-width: unset;
     height: 64px;
     flex-direction: row;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
     top: unset;
     padding: 0 8px;
     justify-content: space-around;
     align-items: center;
     z-index: 100;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    border-top: none;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   }
 
   .logoWrapper {
@@ -169,12 +171,15 @@
     gap: 0;
     width: 100%;
     justify-content: space-around;
+    align-items: center;
+    height: 100%;
+    padding-top: 0;
   }
 
   .navItem {
     flex-direction: column;
-    gap: 4px;
-    padding: 8px 12px;
+    gap: 2px;
+    padding: 6px 10px;
     border-radius: 10px;
     justify-content: center;
     align-items: center;
@@ -187,6 +192,18 @@
 
   .activeBar {
     display: none;
+  }
+
+  .iconWrapper {
+    width: 26px;
+    height: 26px;
+  }
+
+  .navIcon {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    min-height: 26px;
   }
 }
 

@@ -270,6 +270,69 @@
   text-align: center;
 }
 
+/* ── Responsivo ─────────────────────────────── */
+@media (max-width: 600px) {
+  .page {
+    padding: 16px 14px;
+    height: auto;
+    min-height: calc(100vh - 96px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mainCard {
+    margin: 60px 0 0;
+    max-height: none;
+    height: auto;
+    border-radius: 18px;
+    width: 100%;
+  }
+
+  .avatarWrap {
+    top: -60px;
+  }
+
+  .avatarRing {
+    width: 120px;
+    height: 120px;
+  }
+
+  .avatarInitials {
+    font-size: 42px;
+  }
+
+  .cardContent {
+    padding: 72px 20px 28px;
+  }
+
+  .userName {
+    font-size: 28px;
+  }
+
+  .nameInput {
+    font-size: 26px;
+    max-width: 100%;
+  }
+
+  .statsRow {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .statTile {
+    min-height: 90px;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 16px 20px;
+    gap: 16px;
+  }
+
+  .statValue {
+    font-size: 32px;
+  }
+}
+
 /* ── Dark Mode ───────────────────────────────── */
 :global(html[data-dark="true"]) .mainCard {
   background: #1e3a8a;

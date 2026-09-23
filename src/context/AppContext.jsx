@@ -36,8 +36,7 @@ export const AppProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-dark', darkMode ? 'true' : 'false');
-    localStorage.setItem(darkModeKey(user?.id), darkMode);
+    if (user?.id) localStorage.setItem(darkModeKey(user.id), darkMode);
   }, [darkMode, user?.id]);
 
   useEffect(() => {

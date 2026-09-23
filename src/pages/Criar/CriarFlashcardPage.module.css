@@ -549,6 +549,32 @@
   box-shadow: 0 10px 24px rgba(54, 139, 255, 0.4);
 }
 
+/* ── Responsivo mobile ───────────────────────── */
+@media (max-width: 600px) {
+  .header {
+    padding: 14px 16px;
+  }
+
+  .layout {
+    padding: 24px 16px 32px;
+    flex-direction: column;
+  }
+
+  .main {
+    padding-right: 0;
+  }
+
+  .title {
+    font-size: 26px;
+    margin-bottom: 20px;
+  }
+
+  .sidepanel {
+    width: 100%;
+    position: static;
+  }
+}
+
 /* ── Responsivo ──────────────────────────────── */
 @media (max-width: 900px) {
   .layout {
