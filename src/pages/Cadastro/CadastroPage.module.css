@@ -160,25 +160,3 @@
 
 .erro { color: #e03b3b; font-size: 0.85rem; margin: -4px 0 4px; }
 
-.senhaRules {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 14px 16px;
-  background: #F9FAFB;
-  border: 1px solid #E5E7EB;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.ruleOk {
-  font-size: 13px;
-  color: #16a34a;
-  font-weight: 500;
-}
-
-.ruleFail {
-  font-size: 13px;
-  color: #9CA3AF;
-}

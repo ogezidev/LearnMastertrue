@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import SenhaRegras from '@/components/SenhaRegras/SenhaRegras';
+import { senhaValida } from '@/utils/senha';
 import styles from './MaisPage.module.css';
 
 /* ── Toggle switch ── */
@@ -29,45 +31,85 @@ const Row = ({ icon, title, desc, control, danger, iconBg }) => (
 
 /* ── Main page ── */
 const MaisPage = () => {
-  const { user, updateUser, logout, darkMode, toggleDarkMode, dyslexiaFont, toggleDyslexiaFont } = useApp();
+  const { user, alterarEmail, alterarSenha, logout, darkMode, toggleDarkMode, dyslexiaFont, toggleDyslexiaFont } = useApp();
   const navigate = useNavigate();
   const [view, setView] = useState('main'); // 'main' | 'email' | 'senha' | 'logout'
 
   /* ── Email form state ── */
   const [emailInput, setEmailInput] = useState('');
+  const [emailSenha, setEmailSenha] = useState('');
+  const [emailErro, setEmailErro] = useState('');
+  const [emailSalvando, setEmailSalvando] = useState(false);
   const [emailSaved, setEmailSaved] = useState(false);
 
   /* ── Senha form state ── */
   const [senhaAtual, setSenhaAtual] = useState('');
   const [senhaNova, setSenhaNova] = useState('');
   const [senhaConfirm, setSenhaConfirm] = useState('');
-  const [senhaMsg, setSenhaMsg] = useState(null);
+  const [senhaErro, setSenhaErro] = useState('');
+  const [senhaSalvando, setSenhaSalvando] = useState(false);
+  const [senhaOk, setSenhaOk] = useState(false);
 
+  const voltarParaMain = () => {
+    setView('main');
+    setEmailInput(''); setEmailSenha(''); setEmailErro(''); setEmailSaved(false);
+    setSenhaAtual(''); setSenhaNova(''); setSenhaConfirm(''); setSenhaErro(''); setSenhaOk(false);
+  };
+
+  // A senha atual é conferida no servidor
   const handleSaveEmail = async () => {
     const trimmed = emailInput.trim();
-    if (!trimmed || !trimmed.includes('@')) return;
-    await updateUser({ email: trimmed });
-    setEmailSaved(true);
-    setTimeout(() => { setEmailSaved(false); setView('main'); setEmailInput(''); }, 1400);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setEmailErro('Digite um e-mail válido.');
+      return;
+    }
+    if (!emailSenha) {
+      setEmailErro('Informe sua senha atual.');
+      return;
+    }
+    setEmailErro('');
+    setEmailSalvando(true);
+    try {
+      await alterarEmail(trimmed, emailSenha);
+      setEmailSaved(true);
+      setTimeout(voltarParaMain, 1400);
+    } catch (err) {
+      setEmailErro(err.message);
+    } finally {
+      setEmailSalvando(false);
+    }
   };
 
   const handleSaveSenha = async () => {
-    if (!senhaAtual || !senhaNova || senhaNova !== senhaConfirm) {
-      setSenhaMsg('error');
+    if (!senhaAtual) {
+      setSenhaErro('Informe sua senha atual.');
       return;
     }
-    if (senhaAtual !== user?.senha) {
-      setSenhaMsg('error');
+    if (!senhaValida(senhaNova)) {
+      setSenhaErro('A nova senha não atende a todas as regras.');
       return;
     }
-    await updateUser({ senha: senhaNova });
-    setSenhaMsg('ok');
-    setTimeout(() => { setSenhaMsg(null); setView('main'); setSenhaAtual(''); setSenhaNova(''); setSenhaConfirm(''); }, 1600);
+    if (senhaNova !== senhaConfirm) {
+      setSenhaErro('As senhas não coincidem.');
+      return;
+    }
+    setSenhaErro('');
+    setSenhaSalvando(true);
+    try {
+      await alterarSenha(senhaAtual, senhaNova);
+      setSenhaOk(true);
+      setTimeout(voltarParaMain, 1600);
+    } catch (err) {
+      setSenhaErro(err.message);
+    } finally {
+      setSenhaSalvando(false);
+    }
   };
 
-  const handleLogout = () => {
-    logout();
+  // Sai da área logada antes de limpar a sessão; senão a rota protegida redireciona para /entrar
+  const handleLogout = async () => {
     navigate('/');
+    await logout();
   };
 
   const viewTitle = view === 'email' ? 'Alterar E-mail'
@@ -82,7 +124,7 @@ const MaisPage = () => {
         {/* ── Header ── */}
         <div className={styles.header}>
           {view !== 'main' && (
-            <button className={styles.backBtn} onClick={() => setView('main')}>Voltar</button>
+            <button className={styles.backBtn} onClick={voltarParaMain}>Voltar</button>
           )}
           <div className={styles.headerText}>
             <h2 className={styles.headerTitle}>{viewTitle}</h2>
@@ -154,24 +196,38 @@ const MaisPage = () => {
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="4" y="7" width="24" height="18" rx="3" stroke="#368BFF" strokeWidth="2" fill="none"/><path d="M4 11l12 8 12-8" stroke="#368BFF" strokeWidth="2" strokeLinecap="round"/></svg>
               </div>
               <p className={styles.formDesc}>Insira o novo endereço de e-mail que deseja usar na sua conta.</p>
-              <label className={styles.formLabel}>Novo e-mail</label>
+              <label className={styles.formLabel} htmlFor="novo-email">Novo e-mail</label>
               <input
-                className={styles.formInput}
+                id="novo-email"
+                className={`${styles.formInput} ${emailErro ? styles.formInputError : ''}`}
                 type="email"
                 value={emailInput}
-                onChange={e => setEmailInput(e.target.value)}
+                onChange={e => { setEmailInput(e.target.value); setEmailErro(''); }}
                 placeholder="seu@email.com"
-                onKeyDown={e => e.key === 'Enter' && handleSaveEmail()}
+                maxLength={255}
+                autoComplete="email"
                 autoFocus
               />
-              <p className={styles.formHint}>
-                Após salvar, o e-mail será atualizado no sistema.
-              </p>
+              <label className={styles.formLabel} htmlFor="email-senha-atual">Senha atual</label>
+              <input
+                id="email-senha-atual"
+                className={`${styles.formInput} ${emailErro ? styles.formInputError : ''}`}
+                type="password"
+                value={emailSenha}
+                onChange={e => { setEmailSenha(e.target.value); setEmailErro(''); }}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                onKeyDown={e => e.key === 'Enter' && handleSaveEmail()}
+              />
+              {emailErro
+                ? <p className={styles.formError} role="alert">{emailErro}</p>
+                : <p className={styles.formHint}>Por segurança, confirme sua senha atual.</p>}
               <button
                 className={`${styles.formSaveBtn} ${emailSaved ? styles.formSaveBtnOk : ''}`}
                 onClick={handleSaveEmail}
+                disabled={emailSalvando || emailSaved}
               >
-                {emailSaved ? '✓ Salvo!' : 'Salvar e-mail'}
+                {emailSaved ? '✓ Salvo!' : emailSalvando ? 'Salvando...' : 'Salvar e-mail'}
               </button>
             </div>
           )}
@@ -183,38 +239,48 @@ const MaisPage = () => {
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="7" y="14" width="18" height="13" rx="3" stroke="#ea7c1e" strokeWidth="2" fill="none"/><path d="M11 14V10a5 5 0 0 1 10 0v4" stroke="#ea7c1e" strokeWidth="2" strokeLinecap="round"/><circle cx="16" cy="20.5" r="2" fill="#ea7c1e"/></svg>
               </div>
               <p className={styles.formDesc}>Escolha uma senha forte para proteger sua conta.</p>
-              <label className={styles.formLabel}>Senha atual</label>
+              <label className={styles.formLabel} htmlFor="senha-atual">Senha atual</label>
               <input
+                id="senha-atual"
                 className={styles.formInput}
                 type="password"
                 value={senhaAtual}
-                onChange={e => setSenhaAtual(e.target.value)}
+                onChange={e => { setSenhaAtual(e.target.value); setSenhaErro(''); }}
                 placeholder="••••••••"
+                autoComplete="current-password"
                 autoFocus
               />
-              <label className={styles.formLabel}>Nova senha</label>
+              <label className={styles.formLabel} htmlFor="senha-nova">Nova senha</label>
               <input
+                id="senha-nova"
                 className={styles.formInput}
                 type="password"
                 value={senhaNova}
-                onChange={e => setSenhaNova(e.target.value)}
+                onChange={e => { setSenhaNova(e.target.value); setSenhaErro(''); }}
                 placeholder="••••••••"
+                autoComplete="new-password"
               />
-              <label className={styles.formLabel}>Confirmar nova senha</label>
+              {senhaNova.length > 0 && <SenhaRegras senha={senhaNova} />}
+              <label className={styles.formLabel} htmlFor="senha-confirmar">Confirmar nova senha</label>
               <input
-                className={`${styles.formInput} ${senhaMsg === 'error' ? styles.formInputError : ''}`}
+                id="senha-confirmar"
+                className={`${styles.formInput} ${senhaConfirm && senhaNova !== senhaConfirm ? styles.formInputError : ''}`}
                 type="password"
                 value={senhaConfirm}
-                onChange={e => { setSenhaConfirm(e.target.value); setSenhaMsg(null); }}
+                onChange={e => { setSenhaConfirm(e.target.value); setSenhaErro(''); }}
                 placeholder="••••••••"
+                autoComplete="new-password"
                 onKeyDown={e => e.key === 'Enter' && handleSaveSenha()}
               />
-              {senhaMsg === 'error' && <p className={styles.formError}>As senhas não coincidem ou estão em branco.</p>}
+              {senhaErro
+                ? <p className={styles.formError} role="alert">{senhaErro}</p>
+                : <p className={styles.formHint}>Ao trocar a senha, seus outros dispositivos serão desconectados.</p>}
               <button
-                className={`${styles.formSaveBtn} ${senhaMsg === 'ok' ? styles.formSaveBtnOk : ''}`}
+                className={`${styles.formSaveBtn} ${senhaOk ? styles.formSaveBtnOk : ''}`}
                 onClick={handleSaveSenha}
+                disabled={senhaSalvando || senhaOk}
               >
-                {senhaMsg === 'ok' ? '✓ Senha alterada!' : 'Salvar senha'}
+                {senhaOk ? '✓ Senha alterada!' : senhaSalvando ? 'Salvando...' : 'Salvar senha'}
               </button>
             </div>
           )}
@@ -228,7 +294,7 @@ const MaisPage = () => {
               <h3 className={styles.logoutTitle}>Deseja realmente sair?</h3>
               <p className={styles.logoutDesc}>Você será redirecionado para a página inicial. Seu progresso permanece salvo.</p>
               <div className={styles.logoutActions}>
-                <button className={styles.logoutCancelBtn} onClick={() => setView('main')}>
+                <button className={styles.logoutCancelBtn} onClick={voltarParaMain}>
                   Cancelar
                 </button>
                 <button className={styles.logoutConfirmBtn} onClick={handleLogout}>

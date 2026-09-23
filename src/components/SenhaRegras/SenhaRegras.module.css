@@ -1,0 +1,27 @@
+.regras {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 14px 16px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ok {
+  font-size: 13px;
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.pendente {
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+:global(html[data-dark="true"]) .regras {
+  background: #1e293b;
+  border-color: #334155;
+}

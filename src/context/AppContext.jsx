@@ -1,59 +1,53 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import * as api from '@/services/api';
 
 const AppContext = createContext(null);
 
-const USER_KEY = 'lm_user';
-
-const darkModeKey    = (userId) => userId ? `lm_dark_${userId}`     : 'lm_dark';
-const tutorialKey    = (userId) => userId ? `lm_tutorial_${userId}` : 'lm_tutorial';
-
-const readUser = () => {
-  try {
-    return (
-      JSON.parse(localStorage.getItem(USER_KEY)) ||
-      JSON.parse(sessionStorage.getItem(USER_KEY))
-    );
-  } catch { return null; }
-};
+const darkModeKey    = (userId) => `lm_dark_${userId}`;
+const tutorialKey    = (userId) => `lm_tutorial_${userId}`;
 
 export const AppProvider = ({ children }) => {
-  const [user, setUser] = useState(() => readUser());
+  // A sessão fica num cookie httpOnly: ao abrir o app, pergunta ao servidor quem está logado
+  const [user, setUser] = useState(null);
+  const [verificandoSessao, setVerificandoSessao] = useState(true);
+  const iniciou = useRef(false);
 
-  const [darkMode, setDarkMode] = useState(() => {
-    const u = readUser();
-    return localStorage.getItem(darkModeKey(u?.id)) === 'true';
-  });
+  const [darkMode, setDarkMode] = useState(false);
   const [dyslexiaFont, setDyslexiaFont] = useState(() => localStorage.getItem('lm_dyslexia') === 'true');
   const [mainDecks, setMainDecks] = useState([]);
   const [decks, setDecks] = useState([]);
   const [progresso, setProgresso] = useState({ ultimoDeckId: null, ultimoCardId: null });
   const [cardRatings, setCardRatings] = useState({});
   const [loading, setLoading] = useState(false);
-  const [tutorialDone, setTutorialDone] = useState(() => {
-    const u = readUser();
-    return localStorage.getItem(tutorialKey(u?.id)) === 'true';
-  });
+  // Força nova renderização quando o tutorial é concluído (o valor vem do localStorage)
+  const [, setTutorialVersao] = useState(0);
 
+  // Preferências são lidas por usuário sempre que outra conta entra
   useEffect(() => {
-    if (user?.id) localStorage.setItem(darkModeKey(user.id), darkMode);
-  }, [darkMode, user?.id]);
+    setDarkMode(user?.id ? localStorage.getItem(darkModeKey(user.id)) === 'true' : false);
+  }, [user?.id]);
 
   useEffect(() => {
     document.body.classList.toggle('dyslexia-font', dyslexiaFont);
     localStorage.setItem('lm_dyslexia', dyslexiaFont);
   }, [dyslexiaFont]);
 
-  const toggleDarkMode = () => setDarkMode(v => !v);
+  const toggleDarkMode = () => {
+    const novo = !darkMode;
+    setDarkMode(novo);
+    if (user?.id) localStorage.setItem(darkModeKey(user.id), novo);
+  };
   const toggleDyslexiaFont = () => setDyslexiaFont(v => !v);
 
+  const tutorialDone = !!user?.id && localStorage.getItem(tutorialKey(user.id)) === 'true';
+
   const markTutorialDone = () => {
-    setTutorialDone(true);
-    localStorage.setItem(tutorialKey(user?.id), 'true');
+    if (user?.id) localStorage.setItem(tutorialKey(user.id), 'true');
+    setTutorialVersao(v => v + 1);
   };
 
-  // ── Load all data for the logged-in user ──
-  const loadData = useCallback(async (userId) => {
+  // ── Carrega os dados do usuário logado (o servidor já filtra pelo dono) ──
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [allMainDecks, allDecks, allFlashcards] = await Promise.all([
@@ -61,16 +55,13 @@ export const AppProvider = ({ children }) => {
         api.getDecksApi(),
         api.getFlashcardsApi(),
       ]);
-      const userMainDecks  = allMainDecks.filter(md => md.usuarioId === userId);
-      const userDecks      = allDecks.filter(d => d.usuarioId === userId);
-      const userFlashcards = allFlashcards.filter(f => f.usuarioId === userId);
-      const decksWithCards = userDecks.map(deck => ({
+      const decksWithCards = allDecks.map(deck => ({
         ...deck,
-        cards: userFlashcards
+        cards: allFlashcards
           .filter(f => f.deckId === deck.id)
           .map(f => ({ id: f.id, frente: f.frente, verso: f.verso })),
       }));
-      setMainDecks(userMainDecks);
+      setMainDecks(allMainDecks);
       setDecks(decksWithCards);
     } catch (err) {
       console.error('Erro ao carregar dados:', err);
@@ -79,58 +70,67 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
-  // Load data on mount if user is already logged in
-  useEffect(() => {
-    if (user?.id) loadData(user.id);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Auth ──
-  const login = async (email, senha, lembrar = false) => {
-    const userData = await api.loginApi(email, senha);
-    setUser(userData);
-    const storage = lembrar ? localStorage : sessionStorage;
-    storage.setItem(USER_KEY, JSON.stringify(userData));
-    // Migrate dark mode key if needed
-    const genericKey = 'lm_dark';
-    const userKey = darkModeKey(userData.id);
-    if (!localStorage.getItem(userKey) && localStorage.getItem(genericKey)) {
-      localStorage.setItem(userKey, localStorage.getItem(genericKey));
-    }
-    await loadData(userData.id);
-    return userData;
-  };
-
-  const logout = () => {
+  const limparEstado = useCallback(() => {
+    api.limparSessaoLocal();
     setUser(null);
     setMainDecks([]);
     setDecks([]);
     setProgresso({ ultimoDeckId: null, ultimoCardId: null });
     setCardRatings({});
-    localStorage.removeItem(USER_KEY);
-    sessionStorage.removeItem(USER_KEY);
+  }, []);
+
+  // Restaura a sessão ao abrir o app (o ref evita repetir no StrictMode)
+  useEffect(() => {
+    if (iniciou.current) return;
+    iniciou.current = true;
+    api.definirAoExpirarSessao(limparEstado);
+    api.renovarSessao()
+      .then(async (data) => {
+        setUser(data.usuario);
+        await loadData();
+      })
+      .catch(() => {})
+      .finally(() => setVerificandoSessao(false));
+  }, [limparEstado, loadData]);
+
+  // ── Auth ──
+  const login = async (email, senha, lembrar = false) => {
+    const data = await api.loginApi(email, senha, lembrar);
+    setUser(data.usuario);
+    await loadData();
+    return data.usuario;
+  };
+
+  const logout = async () => {
+    try { await api.logoutApi(); } catch { /* a sessão local é encerrada mesmo assim */ }
+    limparEstado();
   };
 
   const cadastrar = async (nome, email, senha) => {
-    const userData = await api.cadastrarApi(nome, email, senha);
-    setUser(userData);
-    localStorage.setItem(USER_KEY, JSON.stringify(userData));
+    const data = await api.cadastrarApi(nome, email, senha);
+    setUser(data.usuario);
     setMainDecks([]);
     setDecks([]);
-    return userData;
+    return data.usuario;
   };
 
-  const updateUser = async (fields) => {
-    const updated = { ...user, ...fields };
-    await api.updateUsuarioApi(user.id, updated);
-    setUser(updated);
-    // Update whichever storage has the session
-    if (localStorage.getItem(USER_KEY)) localStorage.setItem(USER_KEY, JSON.stringify(updated));
-    if (sessionStorage.getItem(USER_KEY)) sessionStorage.setItem(USER_KEY, JSON.stringify(updated));
+  // ── Conta ──
+  const atualizarNome = async (nome) => {
+    setUser(await api.atualizarNomeApi(nome));
+  };
+
+  const alterarEmail = async (email, senhaAtual) => {
+    setUser(await api.alterarEmailApi(email, senhaAtual));
+  };
+
+  const alterarSenha = async (senhaAtual, novaSenha) => {
+    const data = await api.alterarSenhaApi(senhaAtual, novaSenha);
+    setUser(data.usuario);
   };
 
   // ── MainDeck (LearnDeck) ──
   const createMainDeck = async (nome) => {
-    const created = await api.createMainDeckApi(nome, user.id);
+    const created = await api.createMainDeckApi(nome);
     setMainDecks(prev => [...prev, created]);
     return created;
   };
@@ -148,13 +148,13 @@ export const AppProvider = ({ children }) => {
   };
 
   const updateMainDeck = async (mainDeckId, nome) => {
-    await api.updateMainDeckApi(mainDeckId, nome, user.id);
+    await api.updateMainDeckApi(mainDeckId, nome);
     setMainDecks(prev => prev.map(md => md.id === mainDeckId ? { ...md, nome } : md));
   };
 
   // ── Deck ──
   const createDeck = async (nome, mainDeckId) => {
-    const created = await api.createDeckApi(nome, mainDeckId, user.id);
+    const created = await api.createDeckApi(nome, mainDeckId);
     const newDeck = { ...created, cards: [] };
     setDecks(prev => [...prev, newDeck]);
     return newDeck;
@@ -169,13 +169,13 @@ export const AppProvider = ({ children }) => {
 
   const updateDeck = async (deckId, nome) => {
     const deck = decks.find(d => d.id === deckId);
-    await api.updateDeckApi(deckId, nome, deck.mainDeckId, user.id);
+    await api.updateDeckApi(deckId, nome, deck.mainDeckId);
     setDecks(prev => prev.map(d => d.id === deckId ? { ...d, nome } : d));
   };
 
   // ── Flashcard ──
   const createCard = async (deckId, frente, verso) => {
-    const created = await api.createFlashcardApi(frente, verso, deckId, user.id);
+    const created = await api.createFlashcardApi(frente, verso, deckId);
     setDecks(prev =>
       prev.map(deck =>
         deck.id === deckId
@@ -198,7 +198,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const updateCard = async (deckId, cardId, frente, verso) => {
-    await api.updateFlashcardApi(cardId, frente, verso, deckId, user.id);
+    await api.updateFlashcardApi(cardId, frente, verso, deckId);
     setDecks(prev =>
       prev.map(d =>
         d.id === deckId
@@ -225,7 +225,8 @@ export const AppProvider = ({ children }) => {
 
   return (
     <AppContext.Provider value={{
-      user, updateUser, login, logout, cadastrar, loading,
+      user, verificandoSessao, login, logout, cadastrar, loading,
+      atualizarNome, alterarEmail, alterarSenha,
       tutorialDone, markTutorialDone,
       darkMode, toggleDarkMode,
       dyslexiaFont, toggleDyslexiaFont,

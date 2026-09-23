@@ -2,17 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import Header from '@/components/Header/Header';
+import SenhaRegras from '@/components/SenhaRegras/SenhaRegras';
+import { senhaValida as validarSenha } from '@/utils/senha';
 import ImagemCadastro from '@/assets/images/ImagemCadastro.png';
 import styles from './CadastroPage.module.css';
-
-const senhaRules = [
-  { id: 'min',     label: 'Mínimo 8 caracteres',            test: (s) => s.length >= 8 },
-  { id: 'max',     label: 'Máximo 64 caracteres',            test: (s) => s.length <= 64 },
-  { id: 'upper',   label: 'Uma letra maiúscula',             test: (s) => /[A-Z]/.test(s) },
-  { id: 'lower',   label: 'Uma letra minúscula',             test: (s) => /[a-z]/.test(s) },
-  { id: 'number',  label: 'Um número',                       test: (s) => /[0-9]/.test(s) },
-  { id: 'special', label: 'Um caractere especial (!@#...)',  test: (s) => /[^A-Za-z0-9]/.test(s) },
-];
 
 export default function Cadastro() {
   const { cadastrar, user } = useApp();
@@ -20,7 +13,6 @@ export default function Cadastro() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [senhaFocused, setSenhaFocused] = useState(false);
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -28,19 +20,19 @@ export default function Cadastro() {
     if (user) navigate('/app', { replace: true });
   }, [user, navigate]);
 
-  const senhaValida = senhaRules.every(r => r.test(senha));
+  const senhaValida = validarSenha(senha);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!nome.trim() || !email.trim() || !senha.trim()) return;
-    if (!senhaValida) return;
+    if (!nome.trim() || !email.trim() || !senhaValida) return;
     setErro('');
     setLoading(true);
     try {
-      await cadastrar(nome.trim(), email.trim(), senha.trim());
+      // A senha vai exatamente como foi digitada (sem trim)
+      await cadastrar(nome.trim(), email.trim(), senha);
       navigate('/app');
-    } catch {
-      setErro('Erro ao criar conta. Tente novamente.');
+    } catch (err) {
+      setErro(err.message || 'Erro ao criar conta. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -72,10 +64,12 @@ export default function Cadastro() {
               <div className={styles.fieldGroup}>
                 <input
                   type="text"
-                  placeholder="Nome"
+                  placeholder="Nome completo"
                   className={styles.input}
                   value={nome}
                   onChange={e => setNome(e.target.value)}
+                  maxLength={100}
+                  autoComplete="name"
                   required
                 />
               </div>
@@ -87,6 +81,8 @@ export default function Cadastro() {
                   className={styles.input}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
+                  maxLength={255}
+                  autoComplete="email"
                   required
                 />
               </div>
@@ -98,24 +94,13 @@ export default function Cadastro() {
                   className={styles.input}
                   value={senha}
                   onChange={e => setSenha(e.target.value)}
-                  onFocus={() => setSenhaFocused(true)}
+                  autoComplete="new-password"
                   required
                 />
-                {(senhaFocused && senha.length > 0) && (
-                  <ul className={styles.senhaRules}>
-                    {senhaRules.map(rule => (
-                      <li
-                        key={rule.id}
-                        className={rule.test(senha) ? styles.ruleOk : styles.ruleFail}
-                      >
-                        {rule.test(senha) ? '✓' : '✗'} {rule.label}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                {senha.length > 0 && <SenhaRegras senha={senha} />}
               </div>
 
-              {erro && <p className={styles.erro}>{erro}</p>}
+              {erro && <p className={styles.erro} role="alert">{erro}</p>}
 
               <button type="submit" className={styles.btnCriar} disabled={loading || !senhaValida}>
                 {loading ? 'Criando...' : 'Criar'}

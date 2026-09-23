@@ -38,3 +38,32 @@ body.dyslexia-font * {
   word-spacing: 0.12em;
   line-height: 1.75;
 }
+
+/* ── Tela de carregamento enquanto a sessão é verificada ── */
+.app-carregando {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-size: 15px;
+  color: #6b7280;
+}
+
+.app-carregando-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #dbeafe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: app-girar 0.8s linear infinite;
+}
+
+@keyframes app-girar {
+  to { transform: rotate(360deg); }
+}
+
+html[data-dark="true"] .app-carregando {
+  color: #94a3b8;
+}

@@ -20,14 +20,16 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !senha.trim()) return;
+    if (!email.trim() || !senha) return;
     setErro('');
     setLoading(true);
     try {
-      await login(email.trim(), senha.trim(), lembrar);
+      // A senha vai exatamente como foi digitada (sem trim)
+      await login(email.trim(), senha, lembrar);
       navigate('/app');
-    } catch {
-      setErro('E-mail ou senha incorretos.');
+    } catch (err) {
+      // O servidor responde sempre de forma genérica, sem dizer se o erro foi no e-mail ou na senha
+      setErro(err.message || 'E-mail ou senha incorretos.');
     } finally {
       setLoading(false);
     }
@@ -55,6 +57,7 @@ const LoginPage = () => {
                   placeholder="Email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
+                  autoComplete="email"
                   required
                 />
               </div>
@@ -66,11 +69,12 @@ const LoginPage = () => {
                   placeholder="Senha"
                   value={senha}
                   onChange={e => setSenha(e.target.value)}
+                  autoComplete="current-password"
                   required
                 />
               </div>
 
-              {erro && <p className={styles.erro}>{erro}</p>}
+              {erro && <p className={styles.erro} role="alert">{erro}</p>}
 
               <button type="submit" className={styles.btnEntrar} disabled={loading}>
                 {loading ? 'Entrando...' : 'Entrar'}

@@ -2,7 +2,15 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from '@/context/AppContext';
 
 const PrivateRoute = ({ children }) => {
-  const { user } = useApp();
+  const { user, verificandoSessao } = useApp();
+  if (verificandoSessao) {
+    return (
+      <div className="app-carregando" role="status" aria-live="polite">
+        <span className="app-carregando-spinner" aria-hidden="true" />
+        Carregando...
+      </div>
+    );
+  }
   return user ? children : <Navigate to="/entrar" replace />;
 };
 import LandingPage from '@/pages/Landing/LandingPage';
@@ -10,6 +18,7 @@ import ContatoPage from '@/pages/Contato/ContatoPage';
 import LoginPage from '@/pages/Login/LoginPage';
 import CadastroPage from '@/pages/Cadastro/CadastroPage';
 import EsqueceuSenhaPage from '@/pages/EsqueceuSenha/EsqueceuSenhaPage';
+import RedefinirSenhaPage from '@/pages/EsqueceuSenha/RedefinirSenhaPage';
 import QuemSomosPage from '@/pages/QuemSomos/QuemSomosPage';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import HomePage from '@/pages/Dashboard/HomePage';
@@ -35,6 +44,7 @@ function App() {
           <Route path="/entrar"            element={<LoginPage />} />
           <Route path="/cadastro"          element={<CadastroPage />} />
           <Route path="/esqueceu-senha"    element={<EsqueceuSenhaPage />} />
+          <Route path="/redefinir-senha"   element={<RedefinirSenhaPage />} />
           <Route path="/quem-somos"        element={<QuemSomosPage />} />
           <Route path="/criar/learndeck"   element={<PrivateRoute><CriarLearnDeckPage /></PrivateRoute>} />
           <Route path="/criar/deck"        element={<PrivateRoute><CriarDeckPage /></PrivateRoute>} />

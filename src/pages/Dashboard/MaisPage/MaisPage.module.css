@@ -286,9 +286,14 @@
   transition: background 0.15s ease, transform 0.12s ease;
 }
 
-.formSaveBtn:hover {
+.formSaveBtn:hover:not(:disabled) {
   background: #2f7de8;
   transform: translateY(-1px);
+}
+
+.formSaveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .formSaveBtnOk {

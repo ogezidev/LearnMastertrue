@@ -32,60 +32,6 @@
   gap: 32px;
 }
 
-/* ── Indicador de progresso ─────────────────────── */
-.progress {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-}
-
-.progressItem {
-  display: flex;
-  align-items: center;
-}
-
-.progressDot {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid #e5e7eb;
-  background: #f9fafb;
-  color: #9ca3af;
-  font-size: 14px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-
-.progressActive {
-  border-color: #378BFE;
-  background: #378BFE;
-  color: #ffffff;
-  box-shadow: 0 0 0 4px rgba(55, 139, 254, 0.15);
-}
-
-.progressDone {
-  border-color: #22c55e;
-  background: #22c55e;
-  color: #ffffff;
-}
-
-.progressLine {
-  width: 60px;
-  height: 2px;
-  background: #e5e7eb;
-  transition: background 0.3s ease;
-  margin: 0 4px;
-}
-
-.progressLineDone {
-  background: #22c55e;
-}
-
 /* ── Cabeçalho do form ─────────────────────────── */
 .formHeader {
   text-align: center;
@@ -174,48 +120,11 @@
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
 }
 
-/* Input de código — centralizado e maior */
-.inputCodigo {
-  text-align: center;
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: 10px;
-  height: 76px;
-  color: #111111;
-}
-
 .erro {
   font-size: 13px;
   color: #ef4444;
   font-weight: 600;
   margin-top: 2px;
-}
-
-/* ── Banner demo ───────────────────────────────── */
-.demoBanner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  background: #EFF6FF;
-  border: 1.5px solid #BFDBFE;
-  border-radius: 12px;
-  font-size: 14px;
-  color: #1e3a8a;
-}
-
-.demoBanner strong {
-  font-weight: 700;
-}
-
-.codigoDemo {
-  font-weight: 800;
-  font-size: 15px;
-  color: #2563EB;
-  letter-spacing: 2px;
-  background: rgba(37, 99, 235, 0.08);
-  padding: 2px 8px;
-  border-radius: 6px;
 }
 
 /* ── Botões ────────────────────────────────────── */
@@ -236,6 +145,8 @@
   justify-content: center;
   gap: 10px;
   margin-top: 4px;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 
 .btnPrimary:hover:not(:disabled) {
@@ -265,73 +176,6 @@
 .btnSecondary:hover {
   background: #f9fafb;
   border-color: #d1d5db;
-}
-
-/* ── Reenvio ───────────────────────────────────── */
-.reenvioRow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.reenvioText {
-  font-size: 14px;
-  color: #888;
-}
-
-.reenvioBtn {
-  background: none;
-  border: none;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: inherit;
-  color: #2563EB;
-  cursor: pointer;
-  padding: 0;
-  transition: color 0.15s ease;
-}
-
-.reenvioBtn:hover:not(:disabled) {
-  text-decoration: underline;
-}
-
-.reenvioBtnDisabled {
-  color: #9ca3af !important;
-  cursor: not-allowed;
-}
-
-/* ── Força da senha ─────────────────────────────── */
-.forcaSenha {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: -8px;
-}
-
-.forcaBarras {
-  display: flex;
-  gap: 5px;
-  flex: 1;
-}
-
-.forcaBarra {
-  flex: 1;
-  height: 4px;
-  border-radius: 4px;
-  background: #e5e7eb;
-  transition: background 0.25s ease;
-}
-
-.forcaFraca  { background: #ef4444; }
-.forcaMedia  { background: #f59e0b; }
-.forcaForte  { background: #22c55e; }
-
-.forcaLabel {
-  font-size: 12px;
-  font-weight: 700;
-  color: #6b7280;
-  white-space: nowrap;
 }
 
 /* ── Sucesso ───────────────────────────────────── */
@@ -423,10 +267,6 @@
   .title {
     font-size: 36px;
   }
-
-  .progressLine {
-    width: 36px;
-  }
 }
 
 /* ── Dark Mode ─────────────────────────────────── */
@@ -461,22 +301,6 @@
   box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
 }
 
-:global(html[data-dark="true"]) .progressDot {
-  background: #1e293b;
-  border-color: #334155;
-  color: #64748b;
-}
-
-:global(html[data-dark="true"]) .progressLine {
-  background: #334155;
-}
-
-:global(html[data-dark="true"]) .demoBanner {
-  background: rgba(37, 99, 235, 0.1);
-  border-color: rgba(96, 165, 250, 0.3);
-  color: #93c5fd;
-}
-
 :global(html[data-dark="true"]) .btnSecondary {
   background: transparent;
   border-color: #334155;
@@ -489,22 +313,6 @@
 
 :global(html[data-dark="true"]) .voltarLink {
   color: #64748b;
-}
-
-:global(html[data-dark="true"]) .reenvioText {
-  color: #64748b;
-}
-
-:global(html[data-dark="true"]) .reenvioBtnDisabled {
-  color: #475569 !important;
-}
-
-:global(html[data-dark="true"]) .forcaBarra {
-  background: #334155;
-}
-
-:global(html[data-dark="true"]) .forcaLabel {
-  color: #94a3b8;
 }
 
 :global(html[data-dark="true"]) .sucessoMsg {

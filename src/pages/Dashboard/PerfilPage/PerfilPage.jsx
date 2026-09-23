@@ -3,11 +3,13 @@ import { useApp } from '@/context/AppContext';
 import styles from './PerfilPage.module.css';
 
 const PerfilPage = () => {
-  const { user, updateUser, mainDecks, decks } = useApp();
+  const { user, atualizarNome, mainDecks, decks } = useApp();
   const fileInputRef = useRef(null);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [nameErro, setNameErro] = useState('');
+  const [salvandoNome, setSalvandoNome] = useState(false);
 
   const totalCards = decks.reduce((sum, d) => sum + d.cards.length, 0);
 
@@ -21,18 +23,33 @@ const PerfilPage = () => {
 
   const startEditName = () => {
     setNameInput(user?.nome ?? '');
+    setNameErro('');
     setEditingName(true);
   };
 
-  const saveEditName = () => {
+  // Salva no servidor; o novo nome aparece em todo o sistema pelo contexto
+  const saveEditName = async () => {
+    if (salvandoNome) return;
     const trimmed = nameInput.trim();
-    if (trimmed) updateUser({ nome: trimmed });
-    setEditingName(false);
+    if (!trimmed || trimmed === user?.nome) {
+      setEditingName(false);
+      return;
+    }
+    setSalvandoNome(true);
+    try {
+      await atualizarNome(trimmed);
+      setNameErro('');
+      setEditingName(false);
+    } catch (err) {
+      setNameErro(err.message);
+    } finally {
+      setSalvandoNome(false);
+    }
   };
 
   const handleNameKeyDown = (e) => {
     if (e.key === 'Enter') saveEditName();
-    if (e.key === 'Escape') setEditingName(false);
+    if (e.key === 'Escape') { setEditingName(false); setNameErro(''); }
   };
 
   const initials = user?.nome
@@ -134,6 +151,8 @@ const PerfilPage = () => {
               }
             </button>
           </div>
+
+          {nameErro && <p className={styles.nameErro} role="alert">{nameErro}</p>}
 
           {user?.email && <p className={styles.userEmail}>{user.email}</p>}
 

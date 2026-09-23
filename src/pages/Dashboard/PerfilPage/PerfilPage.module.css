@@ -347,3 +347,11 @@
 :global(html[data-dark="true"]) .avatarInitials {
   color: #93c5fd;
 }
+
+.nameErro {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ef4444;
+  text-align: center;
+}
