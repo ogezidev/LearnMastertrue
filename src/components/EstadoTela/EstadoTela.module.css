@@ -1,0 +1,69 @@
+.estado {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid #dbeafe;
+  border-top-color: #368BFF;
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+.texto {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #6b7280;
+  max-width: 420px;
+}
+
+.botao {
+  background: #368BFF;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.erroLinha {
+  width: 100%;
+  max-width: 680px;
+  box-sizing: border-box;
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+:global(html[data-dark="true"]) .texto {
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .erroLinha {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}

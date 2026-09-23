@@ -1168,3 +1168,30 @@
 :global(html[data-dark="true"]) .zoomCloseBtn:hover {
   background: #3d4f68;
 }
+
+/* ── Edição: contador e erro ─────────────────── */
+.modalContador {
+  align-self: flex-end;
+  margin-top: -4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.modalErro {
+  padding: 0 24px 20px;
+}
+
+.modalSave:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Textos longos dos cards e nomes nunca vazam do cartão */
+.flashName,
+.albumName,
+.zoomText,
+.zoomTextVerso {
+  overflow-wrap: anywhere;
+}
+

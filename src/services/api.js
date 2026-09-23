@@ -152,6 +152,10 @@ export const deleteDeckApi = (id) => req('DELETE', `/decks/${id}`);
 export const createFlashcardApi = (frente, verso, deckId) =>
   req('POST', '/flashcards', { frente, verso, deckId });
 
+// Até 5 cards de uma vez: o servidor salva todos ou nenhum
+export const createFlashcardsLoteApi = (deckId, cards) =>
+  req('POST', '/flashcards/lote', { deckId, cards });
+
 export const getFlashcardsApi = () => req('GET', '/flashcards');
 
 export const updateFlashcardApi = (id, frente, verso, deckId) =>

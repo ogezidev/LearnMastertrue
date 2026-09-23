@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import Dialogo from '@/components/Dialogo/Dialogo';
+import { MensagemErro } from '@/components/EstadoTela/EstadoTela';
 import styles from './VerTodosPage.module.css';
 
 const RATING_COLORS = {
@@ -8,6 +10,11 @@ const RATING_COLORS = {
   'lembro-pouco': { card: styles.ratingBlue,  label: 'Lembro pouco', labelCls: styles.ratingLabelBlue  },
   'esqueci':      { card: styles.ratingRed,   label: 'Não lembro',   labelCls: styles.ratingLabelRed   },
 };
+
+const MAX_NOME = 50;
+const MAX_TEXTO_CARD = 200;
+
+const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
 const PALETTE = ['#F87171','#FB923C','#FBBF24','#4ADE80','#60A5FA','#818CF8','#C084FC','#F472B6','#34D399'];
 function getColor(str) {
@@ -37,6 +44,13 @@ const VerTodosPage = () => {
 
   // editModal: { type: 'learndeck'|'deck'|'flashcard', id, nome?, frente?, verso? }
   const [editModal, setEditModal] = useState(null);
+  const [salvandoEdicao, setSalvandoEdicao] = useState(false);
+  const [erroEdicao, setErroEdicao] = useState('');
+
+  // confirmacao: { tipo: 'learndeck'|'deck'|'flashcard', id, nome, decks, cards }
+  const [confirmacao, setConfirmacao] = useState(null);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erroExclusao, setErroExclusao] = useState('');
 
   const currentView = selectedDeckId
     ? 'flashcards'
@@ -73,48 +87,107 @@ const VerTodosPage = () => {
     }
   };
 
-  const handleDeleteMainDeck = (e, id) => {
+  // Antes de excluir, mostra quantos itens serão apagados junto
+  const pedirExclusaoMainDeck = (e, md) => {
     e.stopPropagation();
-    deleteMainDeck(id);
-    if (selectedMainDeckId === id) setSelectedMainDeckId(null);
+    const filhos = decks.filter((d) => d.mainDeckId === md.id);
+    const cards = filhos.reduce((soma, d) => soma + d.cards.length, 0);
+    setErroExclusao('');
+    setConfirmacao({ tipo: 'learndeck', id: md.id, nome: md.nome, decks: filhos.length, cards });
   };
 
-  const handleDeleteDeck = (e, id) => {
+  const pedirExclusaoDeck = (e, deck) => {
     e.stopPropagation();
-    deleteDeck(id);
-    if (selectedDeckId === id) setSelectedDeckId(null);
+    setErroExclusao('');
+    setConfirmacao({ tipo: 'deck', id: deck.id, nome: deck.nome, decks: 0, cards: deck.cards.length });
   };
 
-  const handleDeleteCard = (cardId) => {
-    deleteCard(selectedDeckId, cardId);
-    if (zoomCard?.card.id === cardId) setZoomCard(null);
+  const pedirExclusaoCard = (card) => {
+    setErroExclusao('');
+    setConfirmacao({ tipo: 'flashcard', id: card.id, nome: card.frente, decks: 0, cards: 0 });
+  };
+
+  const confirmarExclusao = async () => {
+    if (!confirmacao || excluindo) return;
+    setExcluindo(true);
+    setErroExclusao('');
+    try {
+      if (confirmacao.tipo === 'learndeck') {
+        await deleteMainDeck(confirmacao.id);
+        if (selectedMainDeckId === confirmacao.id) {
+          setSelectedMainDeckId(null);
+          setSelectedDeckId(null);
+        }
+      } else if (confirmacao.tipo === 'deck') {
+        await deleteDeck(confirmacao.id);
+        if (selectedDeckId === confirmacao.id) setSelectedDeckId(null);
+      } else {
+        await deleteCard(selectedDeckId, confirmacao.id);
+        if (zoomCard?.card.id === confirmacao.id) setZoomCard(null);
+      }
+      setConfirmacao(null);
+    } catch (err) {
+      setErroExclusao(err.message);
+    } finally {
+      setExcluindo(false);
+    }
+  };
+
+  const mensagemExclusao = () => {
+    if (!confirmacao) return '';
+    if (confirmacao.tipo === 'learndeck') {
+      if (confirmacao.decks === 0) return 'O LearnDeck está vazio.';
+      return `Isso apagará ${plural(confirmacao.decks, 'deck', 'decks')} e ${plural(confirmacao.cards, 'flashcard', 'flashcards')}.`;
+    }
+    if (confirmacao.tipo === 'deck') {
+      return confirmacao.cards === 0
+        ? 'O deck está vazio.'
+        : `Isso apagará ${plural(confirmacao.cards, 'flashcard', 'flashcards')}.`;
+    }
+    return 'O card e o histórico de avaliações dele serão apagados.';
+  };
+
+  const abrirEdicao = (dados) => {
+    setErroEdicao('');
+    setEditModal(dados);
   };
 
   const openEditMainDeck = (e, md) => {
     e.stopPropagation();
-    setEditModal({ type: 'learndeck', id: md.id, nome: md.nome });
+    abrirEdicao({ type: 'learndeck', id: md.id, nome: md.nome });
   };
 
   const openEditDeck = (e, deck) => {
     e.stopPropagation();
-    setEditModal({ type: 'deck', id: deck.id, nome: deck.nome });
+    abrirEdicao({ type: 'deck', id: deck.id, nome: deck.nome });
   };
 
   const openEditCard = (card) => {
-    setEditModal({ type: 'flashcard', id: card.id, frente: card.frente, verso: card.verso });
+    abrirEdicao({ type: 'flashcard', id: card.id, frente: card.frente, verso: card.verso });
   };
 
-  const handleSaveEdit = () => {
-    if (!editModal) return;
-    if (editModal.type === 'learndeck') {
-      if (editModal.nome.trim()) updateMainDeck(editModal.id, editModal.nome.trim());
-    } else if (editModal.type === 'deck') {
-      if (editModal.nome.trim()) updateDeck(editModal.id, editModal.nome.trim());
-    } else if (editModal.type === 'flashcard') {
-      if (editModal.frente.trim() && editModal.verso.trim())
-        updateCard(selectedDeckId, editModal.id, editModal.frente.trim(), editModal.verso.trim());
+  const edicaoValida = editModal && (editModal.type === 'flashcard'
+    ? editModal.frente.trim() && editModal.verso.trim()
+    : editModal.nome.trim());
+
+  const handleSaveEdit = async () => {
+    if (!edicaoValida || salvandoEdicao) return;
+    setSalvandoEdicao(true);
+    setErroEdicao('');
+    try {
+      if (editModal.type === 'learndeck') {
+        await updateMainDeck(editModal.id, editModal.nome.trim());
+      } else if (editModal.type === 'deck') {
+        await updateDeck(editModal.id, editModal.nome.trim());
+      } else {
+        await updateCard(selectedDeckId, editModal.id, editModal.frente.trim(), editModal.verso.trim());
+      }
+      setEditModal(null);
+    } catch (err) {
+      setErroEdicao(err.message);
+    } finally {
+      setSalvandoEdicao(false);
     }
-    setEditModal(null);
   };
 
   const openZoom = (card, index) => {
@@ -168,14 +241,24 @@ const VerTodosPage = () => {
                   ◈ Notas
                 </button>
                 <button
+                  className={styles.notasBtn}
+                  onClick={() => navigate(`/criar/flashcard?deck=${selectedDeckId}`)}
+                >
+                  + Cards
+                </button>
+                <button
                   className={styles.playBtn}
                   onClick={() => navigate(`/memorizar/${selectedDeckId}`)}
                   title="Memorizar"
+                  aria-label="Estudar este deck"
                 >▶</button>
               </div>
             ) : (
-              <button className={styles.createBtn} onClick={() => navigate('/app/criar')}>
-                + Criar
+              <button
+                className={styles.createBtn}
+                onClick={() => navigate(currentView === 'decks' ? `/criar/deck?learndeck=${selectedMainDeckId}` : '/criar/learndeck')}
+              >
+                {currentView === 'decks' ? '+ Deck' : '+ LearnDeck'}
               </button>
             )}
           </div>
@@ -224,7 +307,14 @@ const VerTodosPage = () => {
           {isEmpty ? (
             <div className={styles.emptyState}>
               <p className={styles.emptyMsg}>Nenhum item ainda.</p>
-              <button className={styles.emptyBtn} onClick={() => navigate('/app/criar')}>
+              <button
+                className={styles.emptyBtn}
+                onClick={() => navigate(
+                  currentView === 'flashcards' ? `/criar/flashcard?deck=${selectedDeckId}`
+                    : currentView === 'decks' ? `/criar/deck?learndeck=${selectedMainDeckId}`
+                    : '/criar/learndeck',
+                )}
+              >
                 Criar agora
               </button>
             </div>
@@ -249,8 +339,8 @@ const VerTodosPage = () => {
                       </span>
                     )}
                     <div className={styles.cardActions}>
-                      <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); openEditCard(card); }} title="Editar">✎</button>
-                      <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); handleDeleteCard(card.id); }} title="Excluir">✕</button>
+                      <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); openEditCard(card); }} title="Editar" aria-label="Editar card">✎</button>
+                      <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); pedirExclusaoCard(card); }} title="Excluir" aria-label="Excluir card">✕</button>
                     </div>
                     <span className={styles.cardIndex}>#{i + 1}</span>
                     <p className={styles.flashName}>{card.frente}</p>
@@ -282,8 +372,8 @@ const VerTodosPage = () => {
                       <span className={styles.albumMeta}>{deckCount} {deckCount === 1 ? 'deck' : 'decks'}</span>
                     </div>
                     <div className={styles.albumActions}>
-                      <button className={styles.tileEditBtn} onClick={(e) => openEditMainDeck(e, md)} title="Editar">✎</button>
-                      <button className={styles.tileDeleteBtn} onClick={(e) => handleDeleteMainDeck(e, md.id)} title="Excluir">✕</button>
+                      <button className={styles.tileEditBtn} onClick={(e) => openEditMainDeck(e, md)} title="Editar" aria-label={`Editar ${md.nome}`}>✎</button>
+                      <button className={styles.tileDeleteBtn} onClick={(e) => pedirExclusaoMainDeck(e, md)} title="Excluir" aria-label={`Excluir ${md.nome}`}>✕</button>
                     </div>
                   </div>
                 );
@@ -308,8 +398,8 @@ const VerTodosPage = () => {
                       </span>
                     </div>
                     <div className={styles.albumActions}>
-                      <button className={styles.tileEditBtn} onClick={(e) => openEditDeck(e, deck)} title="Editar">✎</button>
-                      <button className={styles.tileDeleteBtn} onClick={(e) => handleDeleteDeck(e, deck.id)} title="Excluir">✕</button>
+                      <button className={styles.tileEditBtn} onClick={(e) => openEditDeck(e, deck)} title="Editar" aria-label={`Editar ${deck.nome}`}>✎</button>
+                      <button className={styles.tileDeleteBtn} onClick={(e) => pedirExclusaoDeck(e, deck)} title="Excluir" aria-label={`Excluir ${deck.nome}`}>✕</button>
                     </div>
                   </div>
                 );
@@ -336,7 +426,7 @@ const VerTodosPage = () => {
                 </button>
                 <button
                   className={styles.zoomDeleteBtn}
-                  onClick={() => handleDeleteCard(zoomCard.card.id)}
+                  onClick={() => pedirExclusaoCard(zoomCard.card)}
                 >
                   Excluir
                 </button>
@@ -383,46 +473,77 @@ const VerTodosPage = () => {
             <div className={styles.modalBody}>
               {editModal.type === 'flashcard' ? (
                 <>
-                  <label className={styles.modalLabel}>Frente</label>
+                  <label className={styles.modalLabel} htmlFor="editar-frente">Frente</label>
                   <textarea
+                    id="editar-frente"
                     className={styles.modalTextarea}
                     value={editModal.frente}
-                    onChange={e => setEditModal(m => ({ ...m, frente: e.target.value }))}
+                    onChange={e => setEditModal(m => ({ ...m, frente: e.target.value.slice(0, MAX_TEXTO_CARD) }))}
                     placeholder="Frente do card..."
+                    maxLength={MAX_TEXTO_CARD}
                     rows={3}
                   />
-                  <label className={styles.modalLabel}>Verso</label>
+                  <span className={styles.modalContador}>{editModal.frente.length}/{MAX_TEXTO_CARD}</span>
+                  <label className={styles.modalLabel} htmlFor="editar-verso">Verso</label>
                   <textarea
+                    id="editar-verso"
                     className={`${styles.modalTextarea} ${styles.modalTextareaVerso}`}
                     value={editModal.verso}
-                    onChange={e => setEditModal(m => ({ ...m, verso: e.target.value }))}
+                    onChange={e => setEditModal(m => ({ ...m, verso: e.target.value.slice(0, MAX_TEXTO_CARD) }))}
                     placeholder="Verso do card..."
+                    maxLength={MAX_TEXTO_CARD}
                     rows={3}
                   />
+                  <span className={styles.modalContador}>{editModal.verso.length}/{MAX_TEXTO_CARD}</span>
                 </>
               ) : (
                 <>
-                  <label className={styles.modalLabel}>Nome</label>
+                  <label className={styles.modalLabel} htmlFor="editar-nome">Nome</label>
                   <input
+                    id="editar-nome"
                     className={styles.modalInput}
                     value={editModal.nome}
-                    onChange={e => setEditModal(m => ({ ...m, nome: e.target.value }))}
+                    onChange={e => setEditModal(m => ({ ...m, nome: e.target.value.slice(0, MAX_NOME) }))}
                     placeholder="Nome..."
-                    maxLength={60}
+                    maxLength={MAX_NOME}
                     onKeyDown={e => e.key === 'Enter' && handleSaveEdit()}
                     autoFocus
                   />
+                  <span className={styles.modalContador}>{editModal.nome.length}/{MAX_NOME}</span>
                 </>
               )}
             </div>
 
             <div className={styles.modalFooter}>
               <button className={styles.modalCancel} onClick={() => setEditModal(null)}>Cancelar</button>
-              <button className={styles.modalSave} onClick={handleSaveEdit}>Salvar</button>
+              <button className={styles.modalSave} onClick={handleSaveEdit} disabled={!edicaoValida || salvandoEdicao}>
+                {salvandoEdicao ? 'Salvando...' : 'Salvar'}
+              </button>
             </div>
+            {erroEdicao && <div className={styles.modalErro}><MensagemErro>{erroEdicao}</MensagemErro></div>}
 
           </div>
         </div>
+      )}
+
+      {/* ── Confirmação de exclusão ── */}
+      {confirmacao && (
+        <Dialogo
+          icone="🗑️"
+          titulo={
+            confirmacao.tipo === 'flashcard' ? 'Excluir este card?'
+              : `Excluir “${confirmacao.nome}”?`
+          }
+          onFechar={() => !excluindo && setConfirmacao(null)}
+          acoes={[
+            { label: excluindo ? 'Excluindo...' : 'Excluir', variante: 'perigo', onClick: confirmarExclusao, disabled: excluindo },
+            { label: 'Cancelar', variante: 'texto', onClick: () => setConfirmacao(null), disabled: excluindo },
+          ]}
+        >
+          <p>{mensagemExclusao()}</p>
+          <p>Essa ação não pode ser desfeita.</p>
+          <MensagemErro>{erroExclusao}</MensagemErro>
+        </Dialogo>
       )}
     </div>
   );

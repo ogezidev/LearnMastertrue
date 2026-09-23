@@ -1,92 +1,148 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import Breadcrumb from '@/components/Breadcrumb/Breadcrumb';
+import Dialogo from '@/components/Dialogo/Dialogo';
+import { Carregando, ErroCarregar, MensagemErro } from '@/components/EstadoTela/EstadoTela';
 import styles from './CriarFlashcardPage.module.css';
 
-const MAX = 251;
+const MAX = 200;
+const MAX_CARDS = 5; // por vez nesta tela; não limita o tamanho do deck
+
+let proximaChave = 0;
+const linhaVazia = () => ({ chave: `card-${++proximaChave}`, frente: '', verso: '' });
 
 const CriarFlashcardPage = () => {
-  const { decks, createCard, updateCard } = useApp();
+  const { mainDecks, decks, createCards, dadosCarregados, erroDados, recarregarDados } = useApp();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const deckDaUrl = Number(params.get('deck')) || null;
 
-  const [deckId, setDeckId] = useState(decks[0]?.id ?? null);
-  const [frente, setFrente] = useState('');
-  const [verso, setVerso] = useState('');
-  const [side, setSide] = useState('frente'); // 'frente' | 'verso'
-  const [flipState, setFlipState] = useState('idle'); // 'idle' | 'out' | 'in'
-  const [savedCards, setSavedCards] = useState([]); // { id, deckId, frente, verso }
-  const [editingIndex, setEditingIndex] = useState(null); // null = novo card
-  const [justSaved, setJustSaved] = useState(false);
+  const [deckId, setDeckId] = useState(deckDaUrl);
+  const [linhas, setLinhas] = useState(() => [linhaVazia()]);
+  const [selecionada, setSelecionada] = useState(0);
+  const [lado, setLado] = useState('frente');
+  const [virando, setVirando] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState('');
+  const [salvos, setSalvos] = useState(null); // quantidade salva: abre o "Deseja prosseguir?"
+  const listaRef = useRef(null);
 
-  const animateFlip = (callback) => {
-    setFlipState('out');
-    setTimeout(() => {
-      callback();
-      setFlipState('in');
-      setTimeout(() => setFlipState('idle'), 220);
-    }, 200);
-  };
-
-  const handleContinue = () => {
-    if (!frente.trim()) return;
-    animateFlip(() => setSide('verso'));
-  };
-
-  const handleFinalizar = async () => {
-    if (!frente.trim() || !verso.trim() || !deckId) return;
-
-    if (editingIndex !== null) {
-      const card = savedCards[editingIndex];
-      await updateCard(Number(deckId), card.id, frente.trim(), verso.trim());
-      setSavedCards((prev) =>
-        prev.map((c, i) =>
-          i === editingIndex
-            ? { ...c, deckId: Number(deckId), frente: frente.trim(), verso: verso.trim() }
-            : c
-        )
-      );
-      setEditingIndex(null);
-    } else {
-      const newId = await createCard(Number(deckId), frente.trim(), verso.trim());
-      setSavedCards((prev) => [
-        ...prev,
-        { id: newId, deckId: Number(deckId), frente: frente.trim(), verso: verso.trim() },
-      ]);
-      setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 1600);
+  // Os decks chegam do servidor depois da primeira renderização (ex.: ao recarregar a página)
+  useEffect(() => {
+    if (!dadosCarregados || decks.length === 0) return;
+    if (!decks.some((d) => d.id === deckId)) {
+      const daUrl = decks.find((d) => d.id === deckDaUrl);
+      setDeckId((daUrl ?? decks[0]).id);
     }
+  }, [dadosCarregados, decks, deckId, deckDaUrl]);
 
-    setFrente('');
-    setVerso('');
-    animateFlip(() => setSide('frente'));
+  const deck = decks.find((d) => d.id === deckId);
+  const learnDeck = mainDecks.find((md) => md.id === deck?.mainDeckId);
+
+  const completas = linhas.filter((l) => l.frente.trim() && l.verso.trim());
+  const incompletas = linhas
+    .map((l, i) => ({ ...l, numero: i + 1 }))
+    .filter((l) => Boolean(l.frente.trim()) !== Boolean(l.verso.trim()));
+
+  const atual = linhas[selecionada] ?? linhas[0];
+
+  const alterar = (i, campo, valor) => {
+    const cortado = valor.slice(0, MAX);
+    setLinhas((prev) => prev.map((l, idx) => (idx === i ? { ...l, [campo]: cortado } : l)));
+    setErro('');
   };
 
-  const handleEditar = (index) => {
-    const card = savedCards[index];
-    setEditingIndex(index);
-    setDeckId(card.deckId);
-    setFrente(card.frente);
-    setVerso(card.verso);
-    animateFlip(() => setSide('frente'));
+  // Ao digitar num campo, a prévia mostra aquele card e aquele lado
+  const focar = (i, campo) => {
+    setSelecionada(i);
+    setLado(campo);
   };
 
-  const handleCancelarEdicao = () => {
-    setEditingIndex(null);
-    setFrente('');
-    setVerso('');
-    animateFlip(() => setSide('frente'));
+  const adicionar = () => {
+    if (linhas.length >= MAX_CARDS) return;
+    setLinhas((prev) => [...prev, linhaVazia()]);
+    setSelecionada(linhas.length);
+    setLado('frente');
+    // foca a frente do card novo depois de renderizar
+    requestAnimationFrame(() => {
+      listaRef.current?.querySelectorAll('textarea[data-campo="frente"]')[linhas.length]?.focus();
+    });
   };
+
+  const remover = (i) => {
+    setLinhas((prev) => prev.filter((_, idx) => idx !== i));
+    setSelecionada((s) => Math.max(0, s >= i ? s - 1 : s));
+  };
+
+  const virar = () => {
+    setVirando(true);
+    setTimeout(() => {
+      setLado((l) => (l === 'frente' ? 'verso' : 'frente'));
+      setVirando(false);
+    }, 180);
+  };
+
+  const salvar = async () => {
+    if (incompletas.length > 0) {
+      setErro(`Preencha a frente e o verso do card ${incompletas.map((l) => l.numero).join(', ')}.`);
+      return;
+    }
+    if (completas.length === 0 || !deckId || salvando) return;
+    setErro('');
+    setSalvando(true);
+    try {
+      const novos = await createCards(
+        deckId,
+        completas.map((l) => ({ frente: l.frente.trim(), verso: l.verso.trim() })),
+      );
+      setSalvos(novos.length);
+    } catch (err) {
+      setErro(err.message);
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const adicionarMais = () => {
+    setSalvos(null);
+    setLinhas([linhaVazia()]);
+    setSelecionada(0);
+    setLado('frente');
+  };
+
+  const header = (
+    <header className={styles.header}>
+      <button className={styles.backBtn} onClick={() => navigate('/app/criar')}>Voltar</button>
+      <div className={styles.steps} aria-hidden="true">
+        <span className={styles.stepDone}>✓</span>
+        <span className={styles.stepDivider}>—</span>
+        <span className={styles.stepDone}>✓</span>
+        <span className={styles.stepDivider}>—</span>
+        <span className={styles.stepActive}>3</span>
+      </div>
+      <div className={styles.headerSpacer} />
+    </header>
+  );
+
+  if (!dadosCarregados) {
+    return (
+      <div className={styles.page}>
+        {header}
+        {erroDados
+          ? <ErroCarregar mensagem={erroDados} onTentar={recarregarDados} />
+          : <Carregando texto="Carregando seus decks..." />}
+      </div>
+    );
+  }
 
   if (decks.length === 0) {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <button className={styles.backBtn} onClick={() => navigate('/app/criar')}>Voltar</button>
-          <div className={styles.headerSpacer} />
-        </header>
-        <main className={styles.mainCenter}>
-          <p className={styles.emptyMsg}>Você precisa criar um Deck antes de criar Flashcards.</p>
-          <button className={styles.actionBtn} onClick={() => navigate('/criar/deck')}>
+        {header}
+        <main className={styles.vazio}>
+          <p className={styles.vazioMsg}>Você precisa criar um Deck antes de criar Flashcards.</p>
+          <button className={styles.botaoPrincipal} onClick={() => navigate('/criar/deck')}>
             Criar Deck
           </button>
         </main>
@@ -94,185 +150,156 @@ const CriarFlashcardPage = () => {
     );
   }
 
-  const isEditing = editingIndex !== null;
-  const hasCards = savedCards.length > 0;
-
-  const cardWrapperClass = [
-    styles.cardWrapper,
-    flipState === 'out' ? styles.cardFlipOut : '',
-    flipState === 'in'  ? styles.cardFlipIn  : '',
-  ].filter(Boolean).join(' ');
+  const textoPrevia = lado === 'frente' ? atual.frente : atual.verso;
+  const tamanhoPrevia = textoPrevia.length > 120 ? styles.textoPequeno : textoPrevia.length > 60 ? styles.textoMedio : '';
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate('/app/criar')}>
-          Voltar
-        </button>
-        <div className={styles.steps}>
-          <span className={styles.stepDone}>✓</span>
-          <span className={styles.stepDivider}>—</span>
-          <span className={styles.stepDone}>✓</span>
-          <span className={styles.stepDivider}>—</span>
-          <span className={styles.stepActive}>3</span>
-        </div>
-        <div className={styles.headerSpacer} />
-      </header>
+      {header}
 
       <div className={styles.layout}>
-
-        {/* ── Área principal ── */}
-        <main className={`${styles.main} ${hasCards && !isEditing ? styles.mainContinuous : ''}`}>
-          <p className={styles.stepLabel}>Passo 3 de 3 · Flashcard</p>
-          <h1 className={styles.title}>
-            {isEditing
-              ? `Editando Card #${editingIndex + 1}`
-              : hasCards
-                ? 'Adicionar mais cards'
-                : 'Crie seu Flashcard'}
-          </h1>
+        <div className={styles.topo}>
+          <Breadcrumb
+            itens={[
+              { label: 'Criar', to: '/app/criar' },
+              { label: learnDeck?.nome ?? 'LearnDeck' },
+              { label: deck?.nome ?? 'Deck' },
+              { label: 'Novos cards' },
+            ]}
+          />
+          <p className={styles.stepLabel}>Passo 3 de 3 · Flashcards</p>
+          <h1 className={styles.title}>Crie seus Flashcards</h1>
 
           <div className={styles.deckRow}>
-            <label className={styles.deckLabel}>Deck:</label>
+            <label className={styles.deckLabel} htmlFor="deck-destino">Deck</label>
             <select
+              id="deck-destino"
               className={styles.deckSelect}
-              value={deckId}
-              onChange={(e) => setDeckId(e.target.value)}
+              value={deckId ?? ''}
+              onChange={(e) => setDeckId(Number(e.target.value))}
             >
-              {decks.map((d) => (
-                <option key={d.id} value={d.id}>{d.nome}</option>
-              ))}
+              {mainDecks.map((md) => {
+                const filhos = decks.filter((d) => d.mainDeckId === md.id);
+                if (filhos.length === 0) return null;
+                return (
+                  <optgroup key={md.id} label={md.nome}>
+                    {filhos.map((d) => <option key={d.id} value={d.id}>{d.nome}</option>)}
+                  </optgroup>
+                );
+              })}
             </select>
           </div>
+        </div>
 
-          {justSaved && (
-            <div className={styles.savedFlash}>
-              <span className={styles.savedFlashIcon}>✓</span>
-              Card salvo! Crie o próximo.
-            </div>
-          )}
-
-          <div className={styles.divider} />
-
-          <div className={cardWrapperClass}>
-            {side === 'frente' ? (
-              <div className={`${styles.cardFront} ${isEditing ? styles.cardFrontEditing : ''}`}>
-                <span className={styles.cardLabel}>Frente</span>
-                <textarea
-                  className={`${styles.textarea} ${hasCards && !isEditing ? styles.textareaCompact : ''}`}
-                  placeholder="Escreva o que deseja memorizar.."
-                  maxLength={MAX}
-                  value={frente}
-                  onChange={(e) => setFrente(e.target.value)}
-                  autoFocus
-                />
-                <span className={styles.counter}>{frente.length}/{MAX}</span>
-              </div>
-            ) : (
-              <div className={styles.cardVerso}>
-                <span className={styles.cardLabelVerso}>Verso</span>
-                {frente && (
-                  <p className={styles.frenteRef}>
-                    {frente.length > 80 ? frente.slice(0, 80) + '…' : frente}
-                  </p>
-                )}
-                <textarea
-                  className={`${styles.textareaVerso} ${hasCards && !isEditing ? styles.textareaCompact : ''}`}
-                  placeholder="Escreva a resposta.."
-                  maxLength={MAX}
-                  value={verso}
-                  onChange={(e) => setVerso(e.target.value)}
-                  autoFocus
-                />
-                <span className={styles.counterVerso}>{verso.length}/{MAX}</span>
-              </div>
-            )}
-          </div>
-
-          <div className={styles.divider} />
-
-          <div className={styles.actions}>
-            {isEditing && (
-              <button className={styles.cancelBtn} onClick={handleCancelarEdicao}>
-                Cancelar
-              </button>
-            )}
-            {side === 'frente' ? (
-              <button
-                className={styles.continueBtn}
-                onClick={handleContinue}
-                disabled={!frente.trim()}
-              >
-                Continuar →
-              </button>
-            ) : (
-              <button
-                className={`${styles.finalizarBtn} ${isEditing ? styles.salvarBtn : ''}`}
-                onClick={handleFinalizar}
-                disabled={!verso.trim()}
-              >
-                {isEditing ? 'Salvar' : 'Finalizar'}
-              </button>
-            )}
-          </div>
-        </main>
-
-        {/* ── Painel lateral ── */}
-        <aside className={styles.sidepanel}>
-          <div className={styles.sidepanelHeader}>
-            <h3 className={styles.sidepanelTitle}>Cards criados</h3>
-            <span className={styles.sidepanelCount}>{savedCards.length}</span>
-          </div>
-
-          {savedCards.length === 0 ? (
-            <p className={styles.sidepanelEmpty}>
-              Seus cards vão aparecer aqui após finalizar.
-            </p>
-          ) : (
-            <div className={styles.cardList}>
-              {savedCards.map((c, i) => (
-                <div
-                  key={c.id}
-                  className={`${styles.savedCard} ${editingIndex === i ? styles.savedCardActive : ''}`}
-                >
-                  <div className={styles.savedCardTop}>
-                    <span className={styles.savedNum}>{i + 1}</span>
-                    <div className={styles.savedContent}>
-                      <span className={styles.savedFrente}>
-                        {c.frente.length > 40 ? c.frente.slice(0, 40) + '…' : c.frente}
-                      </span>
-                      <span className={styles.savedVerso}>
-                        {c.verso.length > 40 ? c.verso.slice(0, 40) + '…' : c.verso}
-                      </span>
-                    </div>
-                  </div>
+        {/* ── Lista de até 5 cards ── */}
+        <section className={styles.lista} ref={listaRef} aria-label="Cards a criar">
+          {linhas.map((linha, i) => (
+            <div
+              key={linha.chave}
+              className={`${styles.linha} ${i === selecionada ? styles.linhaAtiva : ''}`}
+            >
+              <div className={styles.linhaTopo}>
+                <span className={styles.numero}>{i + 1}</span>
+                <span className={styles.linhaTitulo}>Card {i + 1}</span>
+                {linhas.length > 1 && (
                   <button
-                    className={`${styles.editBtn} ${editingIndex === i ? styles.editBtnActive : ''}`}
-                    onClick={() => handleEditar(i)}
+                    type="button"
+                    className={styles.remover}
+                    onClick={() => remover(i)}
+                    aria-label={`Remover card ${i + 1}`}
                   >
-                    {editingIndex === i ? 'Editando...' : 'Editar'}
+                    Remover
                   </button>
+                )}
+              </div>
+
+              {['frente', 'verso'].map((campo) => (
+                <div key={campo} className={styles.campo}>
+                  <label className={styles.campoLabel} htmlFor={`${linha.chave}-${campo}`}>
+                    {campo === 'frente' ? 'Frente' : 'Verso'}
+                  </label>
+                  <textarea
+                    id={`${linha.chave}-${campo}`}
+                    data-campo={campo}
+                    className={`${styles.textarea} ${campo === 'verso' ? styles.textareaVerso : ''}`}
+                    placeholder={campo === 'frente' ? 'Ex: O que é seno?' : 'Ex: Cateto oposto ÷ hipotenusa'}
+                    maxLength={MAX}
+                    rows={2}
+                    value={linha[campo]}
+                    onChange={(e) => alterar(i, campo, e.target.value)}
+                    onFocus={() => focar(i, campo)}
+                    autoFocus={i === 0 && campo === 'frente'}
+                  />
+                  <span className={`${styles.contador} ${linha[campo].length >= MAX ? styles.contadorLimite : ''}`}>
+                    {linha[campo].length}/{MAX}
+                  </span>
                 </div>
               ))}
             </div>
-          )}
+          ))}
 
-          {savedCards.length > 0 && (
-            <div className={styles.sidepanelActions}>
-              <button
-                className={styles.memorizeBtn}
-                onClick={() => navigate(`/memorizar/${deckId}`)}
-              >
-                Ir para memorização →
-              </button>
-              <button className={styles.concluirBtn} onClick={() => navigate('/app')}>
-                Ir para início
-              </button>
-            </div>
-          )}
+          <button
+            type="button"
+            className={styles.adicionar}
+            onClick={adicionar}
+            disabled={linhas.length >= MAX_CARDS}
+          >
+            {linhas.length >= MAX_CARDS
+              ? `Limite de ${MAX_CARDS} cards por vez`
+              : `+ Adicionar card (${linhas.length} de ${MAX_CARDS})`}
+          </button>
+        </section>
+
+        {/* ── Prévia do card selecionado ── */}
+        <aside className={styles.previa} aria-label="Prévia do card">
+          <p className={styles.previaTitulo}>Prévia do card {selecionada + 1}</p>
+          <div
+            className={`${styles.cartao} ${lado === 'verso' ? styles.cartaoVerso : ''} ${virando ? styles.virando : ''}`}
+            aria-live="polite"
+          >
+            <span className={styles.cartaoLado}>{lado === 'frente' ? 'Frente' : 'Verso'}</span>
+            <p className={`${styles.cartaoTexto} ${tamanhoPrevia} ${!textoPrevia ? styles.cartaoVazio : ''}`}>
+              {textoPrevia || (lado === 'frente' ? 'A frente do card aparece aqui' : 'O verso do card aparece aqui')}
+            </p>
+          </div>
+          <button type="button" className={styles.virar} onClick={virar}>
+            ↻ Virar
+          </button>
         </aside>
 
+        <div className={styles.rodape}>
+          <MensagemErro>{erro}</MensagemErro>
+          <button
+            type="button"
+            className={styles.botaoPrincipal}
+            onClick={salvar}
+            disabled={completas.length === 0 || salvando}
+          >
+            {salvando
+              ? 'Salvando...'
+              : completas.length <= 1 ? 'Salvar card' : `Salvar ${completas.length} cards`}
+          </button>
+        </div>
       </div>
+
+      {salvos !== null && (
+        <Dialogo
+          icone="🎉"
+          titulo={salvos === 1 ? '1 card salvo!' : `${salvos} cards salvos!`}
+          onFechar={adicionarMais}
+          acoes={[
+            { label: 'Adicionar mais cards', variante: 'primario', onClick: adicionarMais },
+            { label: 'Estudar este deck', variante: 'secundario', onClick: () => navigate(`/memorizar/${deckId}`) },
+            { label: 'Concluir', variante: 'texto', onClick: () => navigate('/app/criar') },
+          ]}
+        >
+          <p>
+            Adicionados a {learnDeck?.nome ? `${learnDeck.nome} › ` : ''}{deck?.nome}
+            {' '}(agora com {deck?.cards.length ?? 0} {deck?.cards.length === 1 ? 'card' : 'cards'}).
+            Deseja prosseguir?
+          </p>
+        </Dialogo>
+      )}
     </div>
   );
 };

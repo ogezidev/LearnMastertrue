@@ -19,6 +19,9 @@ export const AppProvider = ({ children }) => {
   const [progresso, setProgresso] = useState({ ultimoDeckId: null, ultimoCardId: null });
   const [cardRatings, setCardRatings] = useState({});
   const [loading, setLoading] = useState(false);
+  // Os dados do usuário já chegaram do servidor? (evita mostrar "vazio" antes da hora)
+  const [dadosCarregados, setDadosCarregados] = useState(false);
+  const [erroDados, setErroDados] = useState(null);
   // Força nova renderização quando o tutorial é concluído (o valor vem do localStorage)
   const [, setTutorialVersao] = useState(0);
 
@@ -49,6 +52,7 @@ export const AppProvider = ({ children }) => {
   // ── Carrega os dados do usuário logado (o servidor já filtra pelo dono) ──
   const loadData = useCallback(async () => {
     setLoading(true);
+    setErroDados(null);
     try {
       const [allMainDecks, allDecks, allFlashcards] = await Promise.all([
         api.getMainDecksApi(),
@@ -63,8 +67,9 @@ export const AppProvider = ({ children }) => {
       }));
       setMainDecks(allMainDecks);
       setDecks(decksWithCards);
+      setDadosCarregados(true);
     } catch (err) {
-      console.error('Erro ao carregar dados:', err);
+      setErroDados(err.message || 'Não foi possível carregar seus dados.');
     } finally {
       setLoading(false);
     }
@@ -77,6 +82,8 @@ export const AppProvider = ({ children }) => {
     setDecks([]);
     setProgresso({ ultimoDeckId: null, ultimoCardId: null });
     setCardRatings({});
+    setDadosCarregados(false);
+    setErroDados(null);
   }, []);
 
   // Restaura a sessão ao abrir o app (o ref evita repetir no StrictMode)
@@ -111,6 +118,7 @@ export const AppProvider = ({ children }) => {
     setUser(data.usuario);
     setMainDecks([]);
     setDecks([]);
+    setDadosCarregados(true);
     return data.usuario;
   };
 
@@ -135,13 +143,8 @@ export const AppProvider = ({ children }) => {
     return created;
   };
 
+  // Uma chamada só: o servidor apaga decks, cards e avaliações numa transação
   const deleteMainDeck = async (mainDeckId) => {
-    const deckIds = decks.filter(d => d.mainDeckId === mainDeckId).map(d => d.id);
-    for (const deckId of deckIds) {
-      const cards = decks.find(d => d.id === deckId)?.cards ?? [];
-      for (const card of cards) await api.deleteFlashcardApi(card.id);
-      await api.deleteDeckApi(deckId);
-    }
     await api.deleteMainDeckApi(mainDeckId);
     setMainDecks(prev => prev.filter(md => md.id !== mainDeckId));
     setDecks(prev => prev.filter(d => d.mainDeckId !== mainDeckId));
@@ -161,8 +164,6 @@ export const AppProvider = ({ children }) => {
   };
 
   const deleteDeck = async (deckId) => {
-    const cards = decks.find(d => d.id === deckId)?.cards ?? [];
-    for (const card of cards) await api.deleteFlashcardApi(card.id);
     await api.deleteDeckApi(deckId);
     setDecks(prev => prev.filter(d => d.id !== deckId));
   };
@@ -184,6 +185,16 @@ export const AppProvider = ({ children }) => {
       )
     );
     return created.id;
+  };
+
+  // cards: [{ frente, verso }] (1 a 5). Devolve os cards criados.
+  const createCards = async (deckId, cards) => {
+    const criados = await api.createFlashcardsLoteApi(deckId, cards);
+    const novos = criados.map(c => ({ id: c.id, frente: c.frente, verso: c.verso }));
+    setDecks(prev =>
+      prev.map(deck => (deck.id === deckId ? { ...deck, cards: [...deck.cards, ...novos] } : deck))
+    );
+    return novos;
   };
 
   const deleteCard = async (deckId, cardId) => {
@@ -226,6 +237,7 @@ export const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider value={{
       user, verificandoSessao, login, logout, cadastrar, loading,
+      dadosCarregados, erroDados, recarregarDados: loadData,
       atualizarNome, alterarEmail, alterarSenha,
       tutorialDone, markTutorialDone,
       darkMode, toggleDarkMode,
@@ -234,7 +246,7 @@ export const AppProvider = ({ children }) => {
       getUltimoDeck, getUltimoCard,
       createMainDeck, deleteMainDeck, updateMainDeck,
       createDeck, deleteDeck, updateDeck,
-      createCard, deleteCard, updateCard,
+      createCard, createCards, deleteCard, updateCard,
       updateProgresso, cardRatings, rateCard,
     }}>
       {children}
