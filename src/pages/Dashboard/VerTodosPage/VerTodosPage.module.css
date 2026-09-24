@@ -41,12 +41,15 @@
 
 .headerLeft {
   width: 120px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
 }
 
 .headerCenter {
   flex: 1;
+  min-width: 0;
+  padding: 0 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -54,17 +57,11 @@
 }
 
 .headerRight {
-  width: 120px;
+  min-width: 120px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-}
-
-.breadcrumb {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0.02em;
 }
 
 .headerTitle {
@@ -100,29 +97,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.notasBtn {
-  background: rgba(255, 255, 255, 0.14);
-  border: 1.5px solid transparent;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 8px;
-  transition: background 0.15s ease, border-color 0.15s ease;
-  white-space: nowrap;
-}
-
-.notasBtn:hover {
-  background: rgba(255, 255, 255, 0.24);
-}
-
-.notasBtnActive {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* ── Play Button ─────────────────────────────────── */
@@ -264,26 +238,6 @@
   opacity: 1 !important;
   transform: translateY(-1px);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-}
-
-.chip_all {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-}
-
-.chip_lembro {
-  background: rgba(34, 197, 94, 0.85);
-  color: #ffffff;
-}
-
-.chip_lembro_pouco {
-  background: rgba(59, 130, 246, 0.85);
-  color: #ffffff;
-}
-
-.chip_esqueci {
-  background: rgba(239, 68, 68, 0.85);
-  color: #ffffff;
 }
 
 .chipCount {
@@ -507,9 +461,6 @@
 }
 
 .cardActions {
-  position: absolute;
-  top: 8px;
-  right: 8px;
   display: flex;
   gap: 4px;
   opacity: 0;
@@ -778,55 +729,6 @@
 .emptyBtn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-}
-
-/* ── Rating Colors ───────────────────────────────── */
-.ratingGreen {
-  background-color: rgba(22, 163, 74, 0.82) !important;
-}
-
-.ratingBlue {
-  background-color: rgba(37, 99, 235, 0.82) !important;
-  outline: 2px solid rgba(255, 255, 255, 0.6);
-  outline-offset: -2px;
-}
-
-.ratingRed {
-  background-color: rgba(220, 38, 38, 0.82) !important;
-}
-
-.ratingGreen *,
-.ratingBlue *,
-.ratingRed * {
-  color: white !important;
-}
-
-/* ── Rating Label ────────────────────────────────── */
-.ratingLabel {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
-  border-radius: 20px;
-  padding: 3px 10px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  pointer-events: none;
-  animation: labelPop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-.ratingLabelGreen { color: rgb(22, 163, 74) !important; }
-.ratingLabelBlue  { color: rgb(37, 99, 235) !important; }
-.ratingLabelRed   { color: rgb(220, 38, 38) !important; }
-
-@keyframes labelPop {
-  from { opacity: 0; transform: translateX(-50%) translateY(4px) scale(0.85); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0)   scale(1);    }
 }
 
 /* ── Zoom Modal — Modo Janela ────────────────────── */
@@ -1193,5 +1095,178 @@
 .zoomText,
 .zoomTextVerso {
   overflow-wrap: anywhere;
+}
+
+/* ── Fase 4: níveis de avaliação, busca e acessibilidade ── */
+
+/* Breadcrumb claro sobre o cabeçalho azul */
+.breadcrumbClaro ol {
+  font-size: 12px;
+}
+
+.breadcrumbClaro a,
+:global(html[data-dark="true"]) .breadcrumbClaro a {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.breadcrumbClaro span,
+:global(html[data-dark="true"]) .breadcrumbClaro span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.breadcrumbClaro [aria-current="page"],
+:global(html[data-dark="true"]) .breadcrumbClaro [aria-current="page"] {
+  color: #ffffff;
+}
+
+.breadcrumbClaro a:focus-visible {
+  outline-color: #ffffff;
+}
+
+.headerTitle {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Filtro por avaliação */
+.chipTodos       { background: rgba(255, 255, 255, 0.22); color: #ffffff; }
+.chipDificil     { background: rgba(239, 68, 68, 0.9);   color: #ffffff; }
+.chipBom         { background: rgba(37, 99, 235, 0.9);   color: #ffffff; }
+.chipFacil       { background: rgba(22, 163, 74, 0.9);   color: #ffffff; }
+.chipNaoAvaliado { background: rgba(255, 255, 255, 0.9); color: #4b5563; }
+
+.chipNaoAvaliado .chipCount {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.filterChips {
+  margin-bottom: 16px;
+}
+
+/* Linha do topo do card: etiqueta da avaliação + ações */
+.cardTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+}
+
+.tagNivel {
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tagDificil      { background: #fee2e2; color: #b91c1c; }
+.tagBom          { background: #dbeafe; color: #1d4ed8; }
+.tagFacil        { background: #dcfce7; color: #15803d; }
+.tagNaoAvaliado  { background: #f3f4f6; color: #6b7280; }
+
+.cardCaminho {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  overflow-wrap: anywhere;
+}
+
+.cardTrecho {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.marca {
+  background: #fde68a;
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+/* Resultados agrupados da busca */
+.resultados {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.grupoTitulo {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.albumMeta {
+  overflow-wrap: anywhere;
+}
+
+/* Ações visíveis também pelo teclado e em telas de toque (sem hover) */
+.albumTile:focus-within .albumActions,
+.flashCard:focus-within .cardActions {
+  opacity: 1;
+}
+
+.albumTile:focus-visible,
+.flashCard:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+@media (hover: none) {
+  .albumActions,
+  .cardActions {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    height: auto;
+    min-height: 56px;
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .headerLeft {
+    width: auto;
+  }
+
+  .headerRight {
+    min-width: 0;
+  }
+
+  .headerTitle {
+    font-size: 17px;
+  }
+
+  .backBtn,
+  .createBtn {
+    padding: 7px 10px;
+  }
+
+  .flashGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+:global(html[data-dark="true"]) .tagNaoAvaliado {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+:global(html[data-dark="true"]) .cardCaminho,
+:global(html[data-dark="true"]) .cardTrecho {
+  color: #94a3b8;
 }
 

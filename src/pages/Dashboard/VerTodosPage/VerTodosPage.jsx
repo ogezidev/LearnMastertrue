@@ -1,20 +1,68 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import Breadcrumb from '@/components/Breadcrumb/Breadcrumb';
 import Dialogo from '@/components/Dialogo/Dialogo';
-import { MensagemErro } from '@/components/EstadoTela/EstadoTela';
+import { Carregando, ErroCarregar, MensagemErro } from '@/components/EstadoTela/EstadoTela';
 import styles from './VerTodosPage.module.css';
-
-const RATING_COLORS = {
-  'lembro':       { card: styles.ratingGreen, label: 'Lembro',       labelCls: styles.ratingLabelGreen },
-  'lembro-pouco': { card: styles.ratingBlue,  label: 'Lembro pouco', labelCls: styles.ratingLabelBlue  },
-  'esqueci':      { card: styles.ratingRed,   label: 'Não lembro',   labelCls: styles.ratingLabelRed   },
-};
 
 const MAX_NOME = 50;
 const MAX_TEXTO_CARD = 200;
 
 const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+
+// Níveis de avaliação (a avaliação atual de um card é a mais recente)
+const NIVEIS = {
+  dificil: { label: 'Difícil', tag: styles.tagDificil, chip: styles.chipDificil },
+  bom:     { label: 'Bom',     tag: styles.tagBom,     chip: styles.chipBom },
+  facil:   { label: 'Fácil',   tag: styles.tagFacil,   chip: styles.chipFacil },
+};
+const FILTROS = [
+  { key: 'todos',        label: 'Todos',        chip: styles.chipTodos },
+  { key: 'dificil',      label: 'Difícil',      chip: styles.chipDificil },
+  { key: 'bom',          label: 'Bom',          chip: styles.chipBom },
+  { key: 'facil',        label: 'Fácil',        chip: styles.chipFacil },
+  { key: 'nao-avaliado', label: 'Não avaliado', chip: styles.chipNaoAvaliado },
+];
+
+// Busca sem diferenciar maiúsculas nem acentos ("matematica" acha "Matemática")
+const normalizar = (texto) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+// Destaca o termo buscado no texto original, mantendo acentos e maiúsculas
+const Destaque = ({ texto, termo }) => {
+  if (!termo) return texto;
+  let norm = '';
+  const origem = [];
+  for (let i = 0; i < texto.length; i++) {
+    for (const ch of normalizar(texto[i])) {
+      norm += ch;
+      origem.push(i);
+    }
+  }
+  const alvo = normalizar(termo);
+  const partes = [];
+  let pos = 0;
+  let idx = norm.indexOf(alvo);
+  while (idx !== -1 && alvo) {
+    const ini = origem[idx];
+    const fim = origem[idx + alvo.length - 1] + 1;
+    if (ini > pos) partes.push(texto.slice(pos, ini));
+    partes.push(<mark key={ini} className={styles.marca}>{texto.slice(ini, fim)}</mark>);
+    pos = fim;
+    idx = norm.indexOf(alvo, idx + alvo.length);
+  }
+  partes.push(texto.slice(pos));
+  return partes;
+};
+
+// Trecho do verso ao redor do termo, para cards que só batem pelo verso
+const trecho = (texto, termo) => {
+  const i = normalizar(texto).indexOf(normalizar(termo));
+  if (i === -1) return texto;
+  const ini = Math.max(0, i - 30);
+  const fim = Math.min(texto.length, i + termo.length + 30);
+  return `${ini > 0 ? '…' : ''}${texto.slice(ini, fim)}${fim < texto.length ? '…' : ''}`;
+};
 
 const PALETTE = ['#F87171','#FB923C','#FBBF24','#4ADE80','#60A5FA','#818CF8','#C084FC','#F472B6','#34D399'];
 function getColor(str) {
@@ -23,71 +71,104 @@ function getColor(str) {
   return PALETTE[Math.abs(h) % PALETTE.length];
 }
 
+// Div clicável que também abre com Enter/Espaço
+const ativarComTeclado = (acao) => (e) => {
+  if (e.target !== e.currentTarget) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    acao();
+  }
+};
+
 const VerTodosPage = () => {
   const {
     mainDecks, decks,
     deleteMainDeck, deleteDeck, deleteCard,
     updateMainDeck, updateDeck, updateCard,
-    cardRatings,
+    cardRatings, dadosCarregados, erroDados, recarregarDados,
   } = useApp();
   const navigate = useNavigate();
+  const { learnDeckId, deckId } = useParams();
+  const [params, setParams] = useSearchParams();
 
-  const [selectedMainDeckId, setSelectedMainDeckId] = useState(null);
-  const [selectedDeckId,     setSelectedDeckId]     = useState(null);
-  const [showRatings,        setShowRatings]         = useState(false);
-  const [ratingFilter,       setRatingFilter]        = useState('all');
-  const [searchTerm,         setSearchTerm]          = useState('');
+  // O nível atual vem da URL: o botão Voltar do navegador sobe um nível e recarregar mantém a tela
+  const ldId = learnDeckId ? Number(learnDeckId) : null;
+  const dkId = deckId ? Number(deckId) : null;
+  const nivel = dkId ? 'cards' : ldId ? 'decks' : 'learndecks';
 
-  // Zoom modal (Item 14)
-  const [zoomCard,     setZoomCard]     = useState(null); // { card, index }
+  // Busca e filtro também ficam na URL
+  const termo = params.get('q') ?? '';
+  const filtro = FILTROS.some((f) => f.key === params.get('nota')) ? params.get('nota') : 'todos';
+  const buscando = termo.trim().length > 0;
+
+  const atualizarParams = (novos) => {
+    const p = new URLSearchParams(params);
+    Object.entries(novos).forEach(([k, v]) => (v ? p.set(k, v) : p.delete(k)));
+    setParams(p, { replace: true });
+  };
+
+  const [zoomCard, setZoomCard] = useState(null);
   const [zoomRevealed, setZoomRevealed] = useState(false);
 
-  // editModal: { type: 'learndeck'|'deck'|'flashcard', id, nome?, frente?, verso? }
+  // editModal: { type: 'learndeck'|'deck'|'flashcard', id, deckId?, nome?, frente?, verso? }
   const [editModal, setEditModal] = useState(null);
   const [salvandoEdicao, setSalvandoEdicao] = useState(false);
   const [erroEdicao, setErroEdicao] = useState('');
 
-  // confirmacao: { tipo: 'learndeck'|'deck'|'flashcard', id, nome, decks, cards }
+  // confirmacao: { tipo, id, deckId?, nome, decks, cards }
   const [confirmacao, setConfirmacao] = useState(null);
   const [excluindo, setExcluindo] = useState(false);
   const [erroExclusao, setErroExclusao] = useState('');
 
-  const currentView = selectedDeckId
-    ? 'flashcards'
-    : selectedMainDeckId
-    ? 'decks'
-    : 'learndecks';
+  const learnDeck = mainDecks.find((m) => m.id === ldId);
+  const deck = decks.find((d) => d.id === dkId && d.mainDeckId === ldId);
+  const naoEncontrado = dadosCarregados && ((ldId && !learnDeck) || (dkId && !deck));
 
-  const currentMainDeck = mainDecks.find((md) => md.id === selectedMainDeckId);
-  const currentDeck     = decks.find((d) => d.id === selectedDeckId);
-  const currentDecks    = decks.filter((d) => d.mainDeckId === selectedMainDeckId);
-  const currentCards    = currentDeck?.cards ?? [];
+  const nomeLearnDeck = (id) => mainDecks.find((m) => m.id === id)?.nome ?? '';
 
-  const filteredCards = currentCards.filter((card) => {
-    const matchesSearch = !searchTerm || card.frente.toLowerCase().includes(searchTerm.toLowerCase());
-    const rating = cardRatings[card.id];
-    const matchesRating = ratingFilter === 'all' || rating === ratingFilter;
-    return matchesSearch && matchesRating;
-  });
+  // Todos os cards com o caminho até eles (para busca, edição e exclusão)
+  const todosCards = useMemo(
+    () => decks.flatMap((d) => d.cards.map((c, i) => ({
+      ...c, posicao: i + 1, deckId: d.id, deckNome: d.nome, mainDeckId: d.mainDeckId,
+    }))),
+    [decks],
+  );
 
-  const ratingStats = {
-    lembro:         currentCards.filter(c => cardRatings[c.id] === 'lembro').length,
-    'lembro-pouco': currentCards.filter(c => cardRatings[c.id] === 'lembro-pouco').length,
-    esqueci:        currentCards.filter(c => cardRatings[c.id] === 'esqueci').length,
-  };
+  const casa = (texto) => normalizar(texto).includes(normalizar(termo.trim()));
+  const nivelDoCard = (card) => cardRatings[card.id] ?? null;
+  const passaFiltro = (card) =>
+    filtro === 'todos' || (filtro === 'nao-avaliado' ? !nivelDoCard(card) : nivelDoCard(card) === filtro);
 
-  const handleBack = () => {
-    if (selectedDeckId) {
-      setSelectedDeckId(null);
-      setShowRatings(false);
-      setRatingFilter('all');
-      setSearchTerm('');
-    } else {
-      setSelectedMainDeckId(null);
-    }
-  };
+  // ── O que aparece em cada nível ──
+  const learnDecksVisiveis = nivel === 'learndecks'
+    ? mainDecks.filter((m) => !buscando || casa(m.nome))
+    : [];
 
-  // Antes de excluir, mostra quantos itens serão apagados junto
+  const decksDoEscopo = nivel === 'learndecks' ? decks : decks.filter((d) => d.mainDeckId === ldId);
+  const decksVisiveis = nivel === 'cards' ? [] : decksDoEscopo.filter((d) => !buscando || casa(d.nome));
+
+  const cardsDoEscopo = nivel === 'cards'
+    ? todosCards.filter((c) => c.deckId === dkId)
+    : nivel === 'decks' ? todosCards.filter((c) => c.mainDeckId === ldId) : todosCards;
+  // Cards aparecem dentro de um deck, ou nos resultados de busca dos outros níveis
+  const cardsPorTexto = nivel === 'cards' || buscando
+    ? cardsDoEscopo.filter((c) => !buscando || casa(c.frente) || casa(c.verso))
+    : [];
+  const cardsVisiveis = cardsPorTexto.filter(passaFiltro);
+
+  const contagemFiltro = (key) => cardsPorTexto.filter((c) =>
+    key === 'todos' || (key === 'nao-avaliado' ? !nivelDoCard(c) : nivelDoCard(c) === key)).length;
+
+  const nivelVazio =
+    (nivel === 'learndecks' && mainDecks.length === 0) ||
+    (nivel === 'decks' && decksDoEscopo.length === 0) ||
+    (nivel === 'cards' && cardsDoEscopo.length === 0);
+
+  const caminhoPai = nivel === 'cards' ? `/app/decks/${ldId}` : '/app/decks';
+
+  const limparBusca = () => atualizarParams({ q: null, nota: null });
+
+  // ── Exclusão (mostra quantos itens vão junto) ──
   const pedirExclusaoMainDeck = (e, md) => {
     e.stopPropagation();
     const filhos = decks.filter((d) => d.mainDeckId === md.id);
@@ -96,15 +177,15 @@ const VerTodosPage = () => {
     setConfirmacao({ tipo: 'learndeck', id: md.id, nome: md.nome, decks: filhos.length, cards });
   };
 
-  const pedirExclusaoDeck = (e, deck) => {
+  const pedirExclusaoDeck = (e, d) => {
     e.stopPropagation();
     setErroExclusao('');
-    setConfirmacao({ tipo: 'deck', id: deck.id, nome: deck.nome, decks: 0, cards: deck.cards.length });
+    setConfirmacao({ tipo: 'deck', id: d.id, nome: d.nome, decks: 0, cards: d.cards.length });
   };
 
   const pedirExclusaoCard = (card) => {
     setErroExclusao('');
-    setConfirmacao({ tipo: 'flashcard', id: card.id, nome: card.frente, decks: 0, cards: 0 });
+    setConfirmacao({ tipo: 'flashcard', id: card.id, deckId: card.deckId, nome: card.frente, decks: 0, cards: 0 });
   };
 
   const confirmarExclusao = async () => {
@@ -112,18 +193,11 @@ const VerTodosPage = () => {
     setExcluindo(true);
     setErroExclusao('');
     try {
-      if (confirmacao.tipo === 'learndeck') {
-        await deleteMainDeck(confirmacao.id);
-        if (selectedMainDeckId === confirmacao.id) {
-          setSelectedMainDeckId(null);
-          setSelectedDeckId(null);
-        }
-      } else if (confirmacao.tipo === 'deck') {
-        await deleteDeck(confirmacao.id);
-        if (selectedDeckId === confirmacao.id) setSelectedDeckId(null);
-      } else {
-        await deleteCard(selectedDeckId, confirmacao.id);
-        if (zoomCard?.card.id === confirmacao.id) setZoomCard(null);
+      if (confirmacao.tipo === 'learndeck') await deleteMainDeck(confirmacao.id);
+      else if (confirmacao.tipo === 'deck') await deleteDeck(confirmacao.id);
+      else {
+        await deleteCard(confirmacao.deckId, confirmacao.id);
+        if (zoomCard?.id === confirmacao.id) setZoomCard(null);
       }
       setConfirmacao(null);
     } catch (err) {
@@ -147,6 +221,7 @@ const VerTodosPage = () => {
     return 'O card e o histórico de avaliações dele serão apagados.';
   };
 
+  // ── Edição ──
   const abrirEdicao = (dados) => {
     setErroEdicao('');
     setEditModal(dados);
@@ -157,13 +232,13 @@ const VerTodosPage = () => {
     abrirEdicao({ type: 'learndeck', id: md.id, nome: md.nome });
   };
 
-  const openEditDeck = (e, deck) => {
+  const openEditDeck = (e, d) => {
     e.stopPropagation();
-    abrirEdicao({ type: 'deck', id: deck.id, nome: deck.nome });
+    abrirEdicao({ type: 'deck', id: d.id, nome: d.nome });
   };
 
   const openEditCard = (card) => {
-    abrirEdicao({ type: 'flashcard', id: card.id, frente: card.frente, verso: card.verso });
+    abrirEdicao({ type: 'flashcard', id: card.id, deckId: card.deckId, frente: card.frente, verso: card.verso });
   };
 
   const edicaoValida = editModal && (editModal.type === 'flashcard'
@@ -180,7 +255,7 @@ const VerTodosPage = () => {
       } else if (editModal.type === 'deck') {
         await updateDeck(editModal.id, editModal.nome.trim());
       } else {
-        await updateCard(selectedDeckId, editModal.id, editModal.frente.trim(), editModal.verso.trim());
+        await updateCard(editModal.deckId, editModal.id, editModal.frente.trim(), editModal.verso.trim());
       }
       setEditModal(null);
     } catch (err) {
@@ -190,23 +265,238 @@ const VerTodosPage = () => {
     }
   };
 
-  const openZoom = (card, index) => {
-    setZoomCard({ card, index });
+  const openZoom = (card) => {
+    setZoomCard(card);
     setZoomRevealed(false);
   };
 
-  const closeZoom = () => setZoomCard(null);
+  // ── Cabeçalho ──
+  const itensBreadcrumb = [
+    { label: 'Seus LearnDecks', to: '/app/decks' },
+    ...(learnDeck ? [{ label: learnDeck.nome, to: `/app/decks/${learnDeck.id}` }] : []),
+    ...(deck ? [{ label: deck.nome }] : []),
+  ];
 
-  const headerTitle = {
-    learndecks: 'Seus LearnDecks',
-    decks:      currentMainDeck?.nome ?? '',
-    flashcards: currentDeck?.nome ?? '',
-  }[currentView];
+  const tituloNivel = { learndecks: 'Seus LearnDecks', decks: learnDeck?.nome ?? '', cards: deck?.nome ?? '' }[nivel];
 
-  const isEmpty =
-    (currentView === 'learndecks' && mainDecks.length === 0) ||
-    (currentView === 'decks'      && currentDecks.length === 0) ||
-    (currentView === 'flashcards' && currentCards.length === 0);
+  const placeholderBusca = {
+    learndecks: 'Buscar LearnDecks, decks e cards...',
+    decks: `Buscar decks e cards em ${learnDeck?.nome ?? 'este LearnDeck'}...`,
+    cards: 'Buscar na frente ou no verso dos cards...',
+  }[nivel];
+
+  const irParaCriar = () => navigate(
+    nivel === 'cards' ? `/criar/flashcard?deck=${dkId}`
+      : nivel === 'decks' ? `/criar/deck?learndeck=${ldId}`
+      : '/criar/learndeck',
+  );
+
+  // ── Peças da lista ──
+  const renderLearnDeck = (md, i) => {
+    const qtdDecks = decks.filter((d) => d.mainDeckId === md.id).length;
+    const abrir = () => navigate(`/app/decks/${md.id}`);
+    return (
+      <div
+        key={md.id}
+        className={styles.albumTile}
+        onClick={abrir}
+        onKeyDown={ativarComTeclado(abrir)}
+        role="button"
+        tabIndex={0}
+        aria-label={`Abrir LearnDeck ${md.nome}`}
+        style={{ animationDelay: `${Math.min(i * 45, 360)}ms` }}
+      >
+        <div className={styles.albumCover} style={{ background: getColor(md.nome) }}>
+          <span className={styles.albumInitial}>{md.nome[0]?.toUpperCase()}</span>
+        </div>
+        <div className={styles.albumInfo}>
+          <span className={styles.albumName}><Destaque texto={md.nome} termo={termo.trim()} /></span>
+          <span className={styles.albumMeta}>{plural(qtdDecks, 'deck', 'decks')}</span>
+        </div>
+        <div className={styles.albumActions}>
+          <button className={styles.tileEditBtn} onClick={(e) => openEditMainDeck(e, md)} title="Editar" aria-label={`Editar ${md.nome}`}>✎</button>
+          <button className={styles.tileDeleteBtn} onClick={(e) => pedirExclusaoMainDeck(e, md)} title="Excluir" aria-label={`Excluir ${md.nome}`}>✕</button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDeck = (d, i) => {
+    const abrir = () => navigate(`/app/decks/${d.mainDeckId}/${d.id}`);
+    return (
+      <div
+        key={d.id}
+        className={styles.albumTile}
+        onClick={abrir}
+        onKeyDown={ativarComTeclado(abrir)}
+        role="button"
+        tabIndex={0}
+        aria-label={`Abrir deck ${d.nome}`}
+        style={{ animationDelay: `${Math.min(i * 45, 360)}ms` }}
+      >
+        <div className={styles.albumCover} style={{ background: getColor(d.nome) }}>
+          <span className={styles.albumInitial}>{d.nome[0]?.toUpperCase()}</span>
+        </div>
+        <div className={styles.albumInfo}>
+          <span className={styles.albumName}><Destaque texto={d.nome} termo={termo.trim()} /></span>
+          <span className={styles.albumMeta}>
+            {nivel === 'learndecks' && `${nomeLearnDeck(d.mainDeckId)} · `}
+            {plural(d.cards.length, 'card', 'cards')}
+          </span>
+        </div>
+        <div className={styles.albumActions}>
+          <button className={styles.tileEditBtn} onClick={(e) => openEditDeck(e, d)} title="Editar" aria-label={`Editar ${d.nome}`}>✎</button>
+          <button className={styles.tileDeleteBtn} onClick={(e) => pedirExclusaoDeck(e, d)} title="Excluir" aria-label={`Excluir ${d.nome}`}>✕</button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCard = (card, i) => {
+    const nivelCard = nivelDoCard(card);
+    const info = nivelCard ? NIVEIS[nivelCard] : null;
+    const soNoVerso = buscando && !casa(card.frente) && casa(card.verso);
+    return (
+      <div
+        key={card.id}
+        className={styles.flashCard}
+        onClick={() => openZoom(card)}
+        onKeyDown={ativarComTeclado(() => openZoom(card))}
+        role="button"
+        tabIndex={0}
+        aria-label={`Ver card: ${card.frente}`}
+        style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
+      >
+        <div className={styles.cardTopo}>
+          <span className={`${styles.tagNivel} ${info ? info.tag : styles.tagNaoAvaliado}`}>
+            {info ? info.label : 'Não avaliado'}
+          </span>
+          <div className={styles.cardActions}>
+            <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); openEditCard(card); }} title="Editar" aria-label="Editar card">✎</button>
+            <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); pedirExclusaoCard(card); }} title="Excluir" aria-label="Excluir card">✕</button>
+          </div>
+        </div>
+        {nivel !== 'cards' && (
+          <span className={styles.cardCaminho}>{nomeLearnDeck(card.mainDeckId)} › {card.deckNome}</span>
+        )}
+        <p className={styles.flashName}><Destaque texto={card.frente} termo={termo.trim()} /></p>
+        {soNoVerso && (
+          <p className={styles.cardTrecho}>
+            Verso: <Destaque texto={trecho(card.verso, termo.trim())} termo={termo.trim()} />
+          </p>
+        )}
+        <span className={styles.cardHint}>
+          {nivel === 'cards' ? `#${card.posicao} · ` : ''}Clique para ver →
+        </span>
+      </div>
+    );
+  };
+
+  const chipsFiltro = (
+    <div className={styles.filterChips} role="group" aria-label="Filtrar por avaliação">
+      {FILTROS.map(({ key, label, chip }) => (
+        <button
+          key={key}
+          className={`${styles.chip} ${chip} ${filtro === key ? styles.chipActive : ''}`}
+          onClick={() => atualizarParams({ nota: key === 'todos' ? null : key })}
+          aria-pressed={filtro === key}
+        >
+          {label}
+          <span className={styles.chipCount}>{contagemFiltro(key)}</span>
+        </button>
+      ))}
+    </div>
+  );
+
+  const semResultados = (
+    <div className={styles.emptyState}>
+      <p className={styles.emptyMsg}>
+        {buscando ? `Nada encontrado para “${termo.trim()}”` : 'Nenhum card com essa avaliação.'}
+        {buscando && filtro !== 'todos' && ' com esse filtro'}
+      </p>
+      <button className={styles.emptyBtn} onClick={limparBusca}>Limpar busca e filtro</button>
+    </div>
+  );
+
+  const conteudo = () => {
+    if (!dadosCarregados) {
+      return erroDados
+        ? <ErroCarregar mensagem={erroDados} onTentar={recarregarDados} />
+        : <Carregando texto="Carregando seus LearnDecks..." />;
+    }
+
+    if (naoEncontrado) {
+      return (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyMsg}>Este {dkId ? 'deck' : 'LearnDeck'} não foi encontrado. Ele pode ter sido excluído.</p>
+          <button className={styles.emptyBtn} onClick={() => navigate('/app/decks')}>Ir para Seus LearnDecks</button>
+        </div>
+      );
+    }
+
+    if (nivelVazio) {
+      const msg = {
+        learndecks: 'Você ainda não tem LearnDecks.',
+        decks: 'Este LearnDeck ainda não tem decks.',
+        cards: 'Este deck ainda não tem cards.',
+      }[nivel];
+      return (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyMsg}>{msg}</p>
+          <button className={styles.emptyBtn} onClick={irParaCriar}>Criar agora</button>
+        </div>
+      );
+    }
+
+    // Dentro de um deck: só cards (com busca e filtro)
+    if (nivel === 'cards') {
+      return (
+        <>
+          {chipsFiltro}
+          {cardsVisiveis.length === 0
+            ? semResultados
+            : <div className={styles.flashGrid}>{cardsVisiveis.map(renderCard)}</div>}
+        </>
+      );
+    }
+
+    // Sem busca: só o nível atual
+    if (!buscando) {
+      return nivel === 'learndecks'
+        ? <div className={styles.albumGrid}>{learnDecksVisiveis.map(renderLearnDeck)}</div>
+        : <div className={styles.albumGrid}>{decksVisiveis.map(renderDeck)}</div>;
+    }
+
+    // Com busca: resultados agrupados
+    const total = learnDecksVisiveis.length + decksVisiveis.length + cardsPorTexto.length;
+    if (total === 0) return semResultados;
+
+    return (
+      <div className={styles.resultados}>
+        {nivel === 'learndecks' && learnDecksVisiveis.length > 0 && (
+          <section aria-label="LearnDecks encontrados">
+            <h3 className={styles.grupoTitulo}>LearnDecks ({learnDecksVisiveis.length})</h3>
+            <div className={styles.albumGrid}>{learnDecksVisiveis.map(renderLearnDeck)}</div>
+          </section>
+        )}
+        {decksVisiveis.length > 0 && (
+          <section aria-label="Decks encontrados">
+            <h3 className={styles.grupoTitulo}>Decks ({decksVisiveis.length})</h3>
+            <div className={styles.albumGrid}>{decksVisiveis.map(renderDeck)}</div>
+          </section>
+        )}
+        {cardsPorTexto.length > 0 && (
+          <section aria-label="Cards encontrados">
+            <h3 className={styles.grupoTitulo}>Cards ({cardsVisiveis.length})</h3>
+            {chipsFiltro}
+            {cardsVisiveis.length === 0
+              ? <p className={styles.noResults}>Nenhum card com essa avaliação.</p>
+              : <div className={styles.flashGrid}>{cardsVisiveis.map(renderCard)}</div>}
+          </section>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className={styles.page}>
@@ -215,229 +505,82 @@ const VerTodosPage = () => {
         {/* ── Header ── */}
         <div className={styles.header}>
           <div className={styles.headerLeft}>
-            {currentView !== 'learndecks' && (
-              <button className={styles.backBtn} onClick={handleBack}>← Voltar</button>
+            {nivel !== 'learndecks' && (
+              <button className={styles.backBtn} onClick={() => navigate(caminhoPai)}>← Voltar</button>
             )}
           </div>
 
           <div className={styles.headerCenter}>
-            {currentView !== 'learndecks' && (
-              <span className={styles.breadcrumb}>
-                Seus LearnDecks
-                {currentMainDeck && ` › ${currentMainDeck.nome}`}
-                {currentView === 'flashcards' && currentDeck && ` › ${currentDeck.nome}`}
-              </span>
+            {nivel !== 'learndecks' && (
+              <Breadcrumb className={styles.breadcrumbClaro} itens={itensBreadcrumb} />
             )}
-            <h2 className={styles.headerTitle}>{headerTitle}</h2>
+            <h2 className={styles.headerTitle}>{tituloNivel}</h2>
           </div>
 
           <div className={styles.headerRight}>
-            {currentView === 'flashcards' ? (
-              <div className={styles.headerActions}>
-                <button
-                  className={`${styles.notasBtn} ${showRatings ? styles.notasBtnActive : ''}`}
-                  onClick={() => { setShowRatings(v => !v); if (showRatings) setRatingFilter('all'); }}
-                >
-                  ◈ Notas
+            <div className={styles.headerActions}>
+              {!naoEncontrado && (
+                <button className={styles.createBtn} onClick={irParaCriar}>
+                  {{ learndecks: '+ LearnDeck', decks: '+ Deck', cards: '+ Cards' }[nivel]}
                 </button>
-                <button
-                  className={styles.notasBtn}
-                  onClick={() => navigate(`/criar/flashcard?deck=${selectedDeckId}`)}
-                >
-                  + Cards
-                </button>
+              )}
+              {nivel === 'cards' && deck && deck.cards.length > 0 && (
                 <button
                   className={styles.playBtn}
-                  onClick={() => navigate(`/memorizar/${selectedDeckId}`)}
-                  title="Memorizar"
+                  onClick={() => navigate(`/memorizar/${dkId}`)}
+                  title="Estudar este deck"
                   aria-label="Estudar este deck"
                 >▶</button>
-              </div>
-            ) : (
-              <button
-                className={styles.createBtn}
-                onClick={() => navigate(currentView === 'decks' ? `/criar/deck?learndeck=${selectedMainDeckId}` : '/criar/learndeck')}
-              >
-                {currentView === 'decks' ? '+ Deck' : '+ LearnDeck'}
-              </button>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
-        {/* ── Toolbar (flashcards only) ── */}
-        {currentView === 'flashcards' && (
+        {/* ── Busca ── */}
+        {dadosCarregados && !naoEncontrado && !nivelVazio && (
           <div className={styles.toolbar}>
             <div className={styles.searchWrap}>
-              <span className={styles.searchIcon}>⌕</span>
+              <span className={styles.searchIcon} aria-hidden="true">⌕</span>
               <input
                 className={styles.searchInput}
-                type="text"
-                placeholder="Buscar flashcard..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                type="search"
+                placeholder={placeholderBusca}
+                aria-label={placeholderBusca}
+                value={termo}
+                onChange={(e) => atualizarParams({ q: e.target.value })}
               />
-              {searchTerm && (
-                <button className={styles.searchClear} onClick={() => setSearchTerm('')}>✕</button>
+              {termo && (
+                <button className={styles.searchClear} onClick={() => atualizarParams({ q: null })} aria-label="Limpar busca">✕</button>
               )}
             </div>
-            {showRatings && (
-              <div className={styles.filterChips}>
-                {[
-                  { key: 'all',          label: 'Todos',         count: null },
-                  { key: 'lembro',       label: 'Lembro',        count: ratingStats.lembro },
-                  { key: 'lembro-pouco', label: 'Lembro pouco',  count: ratingStats['lembro-pouco'] },
-                  { key: 'esqueci',      label: 'Não lembro',    count: ratingStats.esqueci },
-                ].map(({ key, label, count }) => (
-                  <button
-                    key={key}
-                    className={`${styles.chip} ${styles[`chip_${key.replace('-','_')}`]} ${ratingFilter === key ? styles.chipActive : ''}`}
-                    onClick={() => setRatingFilter(key)}
-                  >
-                    {label}
-                    {count !== null && <span className={styles.chipCount}>{count}</span>}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         )}
 
-        {/* ── Content ── */}
-        <div className={styles.gridWrapper}>
-          {isEmpty ? (
-            <div className={styles.emptyState}>
-              <p className={styles.emptyMsg}>Nenhum item ainda.</p>
-              <button
-                className={styles.emptyBtn}
-                onClick={() => navigate(
-                  currentView === 'flashcards' ? `/criar/flashcard?deck=${selectedDeckId}`
-                    : currentView === 'decks' ? `/criar/deck?learndeck=${selectedMainDeckId}`
-                    : '/criar/learndeck',
-                )}
-              >
-                Criar agora
-              </button>
-            </div>
-          ) : currentView === 'flashcards' ? (
-
-            <div className={styles.flashGrid}>
-              {filteredCards.length === 0 ? (
-                <p className={styles.noResults}>Nenhum card encontrado.</p>
-              ) : filteredCards.map((card, i) => {
-                const rating     = cardRatings[card.id];
-                const ratingInfo = showRatings && rating ? RATING_COLORS[rating] : null;
-                return (
-                  <div
-                    key={card.id}
-                    className={`${styles.flashCard} ${ratingInfo ? ratingInfo.card : ''}`}
-                    onClick={() => openZoom(card, i)}
-                    style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
-                  >
-                    {ratingInfo && (
-                      <span className={`${styles.ratingLabel} ${ratingInfo.labelCls}`}>
-                        {ratingInfo.label}
-                      </span>
-                    )}
-                    <div className={styles.cardActions}>
-                      <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); openEditCard(card); }} title="Editar" aria-label="Editar card">✎</button>
-                      <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); pedirExclusaoCard(card); }} title="Excluir" aria-label="Excluir card">✕</button>
-                    </div>
-                    <span className={styles.cardIndex}>#{i + 1}</span>
-                    <p className={styles.flashName}>{card.frente}</p>
-                    <span className={styles.cardHint}>Clique para ver →</span>
-                  </div>
-                );
-              })}
-            </div>
-
-          ) : (
-
-            /* ── Album Grid (LearnDecks / Decks) ── */
-            <div className={styles.albumGrid}>
-              {currentView === 'learndecks' && mainDecks.map((md, i) => {
-                const deckCount = decks.filter((d) => d.mainDeckId === md.id).length;
-                const color = getColor(md.nome);
-                return (
-                  <div
-                    key={md.id}
-                    className={styles.albumTile}
-                    onClick={() => setSelectedMainDeckId(md.id)}
-                    style={{ animationDelay: `${Math.min(i * 45, 360)}ms` }}
-                  >
-                    <div className={styles.albumCover} style={{ background: color }}>
-                      <span className={styles.albumInitial}>{md.nome[0]?.toUpperCase()}</span>
-                    </div>
-                    <div className={styles.albumInfo}>
-                      <span className={styles.albumName}>{md.nome}</span>
-                      <span className={styles.albumMeta}>{deckCount} {deckCount === 1 ? 'deck' : 'decks'}</span>
-                    </div>
-                    <div className={styles.albumActions}>
-                      <button className={styles.tileEditBtn} onClick={(e) => openEditMainDeck(e, md)} title="Editar" aria-label={`Editar ${md.nome}`}>✎</button>
-                      <button className={styles.tileDeleteBtn} onClick={(e) => pedirExclusaoMainDeck(e, md)} title="Excluir" aria-label={`Excluir ${md.nome}`}>✕</button>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {currentView === 'decks' && currentDecks.map((deck, i) => {
-                const color = getColor(deck.nome);
-                return (
-                  <div
-                    key={deck.id}
-                    className={styles.albumTile}
-                    onClick={() => setSelectedDeckId(deck.id)}
-                    style={{ animationDelay: `${Math.min(i * 45, 360)}ms` }}
-                  >
-                    <div className={styles.albumCover} style={{ background: color }}>
-                      <span className={styles.albumInitial}>{deck.nome[0]?.toUpperCase()}</span>
-                    </div>
-                    <div className={styles.albumInfo}>
-                      <span className={styles.albumName}>{deck.nome}</span>
-                      <span className={styles.albumMeta}>
-                        {deck.cards.length} {deck.cards.length === 1 ? 'card' : 'cards'}
-                      </span>
-                    </div>
-                    <div className={styles.albumActions}>
-                      <button className={styles.tileEditBtn} onClick={(e) => openEditDeck(e, deck)} title="Editar" aria-label={`Editar ${deck.nome}`}>✎</button>
-                      <button className={styles.tileDeleteBtn} onClick={(e) => pedirExclusaoDeck(e, deck)} title="Excluir" aria-label={`Excluir ${deck.nome}`}>✕</button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
+        {/* ── Conteúdo ── */}
+        <div className={styles.gridWrapper}>{conteudo()}</div>
       </div>
 
-      {/* ── Zoom Modal — Modo Janela (Item 14) ── */}
+      {/* ── Card aberto ── */}
       {zoomCard && (
-        <div className={styles.zoomOverlay} onClick={closeZoom}>
-          <div className={styles.zoomModal} onClick={e => e.stopPropagation()}>
-
+        <div className={styles.zoomOverlay} onClick={() => setZoomCard(null)}>
+          <div className={styles.zoomModal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Card">
             <div className={styles.zoomHeader}>
-              <span className={styles.zoomIndex}>#{zoomCard.index + 1}</span>
+              <span className={styles.zoomIndex}>{nomeLearnDeck(zoomCard.mainDeckId)} › {zoomCard.deckNome}</span>
               <div className={styles.zoomHeaderActions}>
-                <button
-                  className={styles.zoomEditBtn}
-                  onClick={() => { closeZoom(); openEditCard(zoomCard.card); }}
-                >
+                <button className={styles.zoomEditBtn} onClick={() => { setZoomCard(null); openEditCard(zoomCard); }}>
                   ✎ Editar
                 </button>
-                <button
-                  className={styles.zoomDeleteBtn}
-                  onClick={() => pedirExclusaoCard(zoomCard.card)}
-                >
+                <button className={styles.zoomDeleteBtn} onClick={() => pedirExclusaoCard(zoomCard)}>
                   Excluir
                 </button>
-                <button className={styles.zoomCloseBtn} onClick={closeZoom}>✕</button>
+                <button className={styles.zoomCloseBtn} onClick={() => setZoomCard(null)} aria-label="Fechar">✕</button>
               </div>
             </div>
 
             <div className={styles.zoomBody}>
               <div className={styles.zoomFrente}>
                 <span className={styles.zoomSideLabel}>Frente</span>
-                <p className={styles.zoomText}>{zoomCard.card.frente}</p>
+                <p className={styles.zoomText}>{zoomCard.frente}</p>
               </div>
 
               {!zoomRevealed ? (
@@ -447,27 +590,26 @@ const VerTodosPage = () => {
               ) : (
                 <div className={styles.zoomVerso}>
                   <span className={styles.zoomSideLabelVerso}>Verso</span>
-                  <p className={styles.zoomTextVerso}>{zoomCard.card.verso}</p>
+                  <p className={styles.zoomTextVerso}>{zoomCard.verso}</p>
                 </div>
               )}
             </div>
-
           </div>
         </div>
       )}
 
-      {/* ── Edit Modal ── */}
+      {/* ── Edição ── */}
       {editModal && (
         <div className={styles.modalOverlay} onClick={() => setEditModal(null)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="titulo-edicao">
 
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>
+              <h3 id="titulo-edicao" className={styles.modalTitle}>
                 {editModal.type === 'flashcard' ? 'Editar Flashcard'
-                  : editModal.type === 'deck'   ? 'Editar Deck'
+                  : editModal.type === 'deck' ? 'Editar Deck'
                   : 'Editar LearnDeck'}
               </h3>
-              <button className={styles.modalClose} onClick={() => setEditModal(null)}>✕</button>
+              <button className={styles.modalClose} onClick={() => setEditModal(null)} aria-label="Fechar">✕</button>
             </div>
 
             <div className={styles.modalBody}>
@@ -478,7 +620,7 @@ const VerTodosPage = () => {
                     id="editar-frente"
                     className={styles.modalTextarea}
                     value={editModal.frente}
-                    onChange={e => setEditModal(m => ({ ...m, frente: e.target.value.slice(0, MAX_TEXTO_CARD) }))}
+                    onChange={(e) => setEditModal((m) => ({ ...m, frente: e.target.value.slice(0, MAX_TEXTO_CARD) }))}
                     placeholder="Frente do card..."
                     maxLength={MAX_TEXTO_CARD}
                     rows={3}
@@ -489,7 +631,7 @@ const VerTodosPage = () => {
                     id="editar-verso"
                     className={`${styles.modalTextarea} ${styles.modalTextareaVerso}`}
                     value={editModal.verso}
-                    onChange={e => setEditModal(m => ({ ...m, verso: e.target.value.slice(0, MAX_TEXTO_CARD) }))}
+                    onChange={(e) => setEditModal((m) => ({ ...m, verso: e.target.value.slice(0, MAX_TEXTO_CARD) }))}
                     placeholder="Verso do card..."
                     maxLength={MAX_TEXTO_CARD}
                     rows={3}
@@ -503,10 +645,10 @@ const VerTodosPage = () => {
                     id="editar-nome"
                     className={styles.modalInput}
                     value={editModal.nome}
-                    onChange={e => setEditModal(m => ({ ...m, nome: e.target.value.slice(0, MAX_NOME) }))}
+                    onChange={(e) => setEditModal((m) => ({ ...m, nome: e.target.value.slice(0, MAX_NOME) }))}
                     placeholder="Nome..."
                     maxLength={MAX_NOME}
-                    onKeyDown={e => e.key === 'Enter' && handleSaveEdit()}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                     autoFocus
                   />
                   <span className={styles.modalContador}>{editModal.nome.length}/{MAX_NOME}</span>
@@ -521,7 +663,6 @@ const VerTodosPage = () => {
               </button>
             </div>
             {erroEdicao && <div className={styles.modalErro}><MensagemErro>{erroEdicao}</MensagemErro></div>}
-
           </div>
         </div>
       )}
@@ -530,10 +671,7 @@ const VerTodosPage = () => {
       {confirmacao && (
         <Dialogo
           icone="🗑️"
-          titulo={
-            confirmacao.tipo === 'flashcard' ? 'Excluir este card?'
-              : `Excluir “${confirmacao.nome}”?`
-          }
+          titulo={confirmacao.tipo === 'flashcard' ? 'Excluir este card?' : `Excluir “${confirmacao.nome}”?`}
           onFechar={() => !excluindo && setConfirmacao(null)}
           acoes={[
             { label: excluindo ? 'Excluindo...' : 'Excluir', variante: 'perigo', onClick: confirmarExclusao, disabled: excluindo },

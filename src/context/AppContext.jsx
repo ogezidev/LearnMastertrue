@@ -54,10 +54,11 @@ export const AppProvider = ({ children }) => {
     setLoading(true);
     setErroDados(null);
     try {
-      const [allMainDecks, allDecks, allFlashcards] = await Promise.all([
+      const [allMainDecks, allDecks, allFlashcards, avaliacoes] = await Promise.all([
         api.getMainDecksApi(),
         api.getDecksApi(),
         api.getFlashcardsApi(),
+        api.getAvaliacoesAtuaisApi(),
       ]);
       const decksWithCards = allDecks.map(deck => ({
         ...deck,
@@ -67,6 +68,8 @@ export const AppProvider = ({ children }) => {
       }));
       setMainDecks(allMainDecks);
       setDecks(decksWithCards);
+      // As chaves do JSON chegam como texto; os ids dos cards são números
+      setCardRatings(Object.fromEntries(Object.entries(avaliacoes ?? {}).map(([id, nivel]) => [Number(id), nivel])));
       setDadosCarregados(true);
     } catch (err) {
       setErroDados(err.message || 'Não foi possível carregar seus dados.');
@@ -220,8 +223,10 @@ export const AppProvider = ({ children }) => {
   };
 
   // ── Ratings & Progresso ──
+  // Até a Fase 5, a tela de estudo ainda usa os nomes antigos e só guarda na memória
+  const NIVEL_ANTIGO = { esqueci: 'dificil', 'lembro-pouco': 'bom', lembro: 'facil' };
   const rateCard = (cardId, rating) => {
-    setCardRatings(prev => ({ ...prev, [cardId]: rating }));
+    setCardRatings(prev => ({ ...prev, [cardId]: NIVEL_ANTIGO[rating] ?? rating }));
   };
 
   const updateProgresso = (data) => {

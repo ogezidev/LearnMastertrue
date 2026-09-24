@@ -162,3 +162,7 @@ export const updateFlashcardApi = (id, frente, verso, deckId) =>
   req('PUT', `/flashcards/${id}`, { frente, verso, deckId });
 
 export const deleteFlashcardApi = (id) => req('DELETE', `/flashcards/${id}`);
+
+// ── Avaliações ────────────────────────────────────
+// { flashcardId: 'dificil' | 'bom' | 'facil' } com a avaliação mais recente de cada card
+export const getAvaliacoesAtuaisApi = () => req('GET', '/avaliacoes/atuais');

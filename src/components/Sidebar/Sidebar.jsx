@@ -32,7 +32,8 @@ const Sidebar = () => {
 
       <nav className={styles.nav}>
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.to;
+          // "Ver todos" continua ativo dentro de /app/decks/...
+          const isActive = item.to === '/app' ? pathname === '/app' : pathname.startsWith(item.to);
           const icon = (item.changeIcon && isActive) ? item.iconActive : item.iconDefault;
 
           return (

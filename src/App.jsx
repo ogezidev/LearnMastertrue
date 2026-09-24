@@ -56,6 +56,8 @@ function App() {
             <Route index element={<HomePage />} />
             <Route path="criar"   element={<CriarPage />} />
             <Route path="decks"   element={<VerTodosPage />} />
+            <Route path="decks/:learnDeckId" element={<VerTodosPage />} />
+            <Route path="decks/:learnDeckId/:deckId" element={<VerTodosPage />} />
             <Route path="perfil"  element={<PerfilPage />} />
             <Route path="mais"    element={<MaisPage />} />
           </Route>
