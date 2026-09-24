@@ -40,6 +40,8 @@ const Sidebar = () => {
             <Link
               key={item.to}
               to={item.to}
+              aria-label={item.label}
+              aria-current={isActive ? 'page' : undefined}
               className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             >
               {isActive && <span className={styles.activeBar} />}

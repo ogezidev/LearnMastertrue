@@ -351,3 +351,34 @@
     opacity: 1;
   }
 }
+
+/* Telas baixas (ex.: notebook 1366x768): tudo cabe sem rolar, com os 3 botões visíveis */
+@media (max-height: 820px) {
+  .page {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .container {
+    padding: 28px 36px;
+    gap: 18px;
+  }
+
+  .emoji {
+    font-size: 44px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .ringWrap,
+  .ring {
+    width: 150px;
+    height: 150px;
+  }
+
+  .ringCount {
+    font-size: 40px;
+  }
+}
