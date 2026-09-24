@@ -3,7 +3,6 @@ import * as api from '@/services/api';
 
 const AppContext = createContext(null);
 
-const tutorialKey    = (userId) => `lm_tutorial_${userId}`;
 
 export const AppProvider = ({ children }) => {
   // A sessão fica num cookie httpOnly: ao abrir o app, pergunta ao servidor quem está logado
@@ -18,8 +17,6 @@ export const AppProvider = ({ children }) => {
   // Os dados do usuário já chegaram do servidor? (evita mostrar "vazio" antes da hora)
   const [dadosCarregados, setDadosCarregados] = useState(false);
   const [erroDados, setErroDados] = useState(null);
-  // Força nova renderização quando o tutorial é concluído (o valor vem do localStorage)
-  const [, setTutorialVersao] = useState(0);
 
   // Preferências vêm do banco junto com o usuário: acompanham a conta em qualquer dispositivo
   const darkMode = !!user?.modoNoturno;
@@ -43,11 +40,13 @@ export const AppProvider = ({ children }) => {
   const toggleDarkMode = () => atualizarPreferencia('modoNoturno', !darkMode);
   const toggleDyslexiaFont = () => atualizarPreferencia('fonteDislexia', !dyslexiaFont);
 
-  const tutorialDone = !!user?.id && localStorage.getItem(tutorialKey(user.id)) === 'true';
+  // A conclusão do tutorial fica no banco: não reaparece, nem em outro dispositivo.
+  // Se a gravação falhar, ele fica fechado nesta sessão e volta a aparecer no próximo login.
+  const tutorialDone = !!user?.tutorialConcluido;
 
   const markTutorialDone = () => {
-    if (user?.id) localStorage.setItem(tutorialKey(user.id), 'true');
-    setTutorialVersao(v => v + 1);
+    setUser(u => (u ? { ...u, tutorialConcluido: true } : u));
+    api.atualizarPreferenciasApi({ tutorialConcluido: true }).then(setUser).catch(() => {});
   };
 
   // ── Carrega os dados do usuário logado (o servidor já filtra pelo dono) ──

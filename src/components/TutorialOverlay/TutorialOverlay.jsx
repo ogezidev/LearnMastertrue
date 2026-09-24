@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './TutorialOverlay.module.css';
 
 const STEPS = [
@@ -28,29 +28,53 @@ const STEPS = [
     bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
     title: 'Avalie sua memória',
     description:
-      'Durante o estudo, avalie cada card como Fácil, Bom ou Difícil. Isso te ajuda a focar no que precisa revisar mais.',
+      'Depois de revelar o verso, avalie cada card como Difícil, Bom ou Fácil. Assim você sabe o que precisa revisar mais.',
   },
   {
     emoji: '🚀',
     bg: 'linear-gradient(135deg, #368BFF 0%, #1d6fed 100%)',
     title: 'Pronto para começar!',
     description:
-      'Comece criando seu primeiro LearnDeck. Use o LearnMaster todo dia e veja seu conhecimento crescer!',
+      'Comece criando seu primeiro LearnDeck. Você pode rever tudo isso quando quiser na tela inicial.',
   },
 ];
 
+// Aparece até o usuário concluir ou pular; a conclusão fica salva no banco (não volta a aparecer)
 const TutorialOverlay = ({ onDone }) => {
   const [step, setStep] = useState(0);
+  const modalRef = useRef(null);
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
+  // Foco no botão principal a cada passo; Esc pula; setas navegam
+  useEffect(() => {
+    modalRef.current?.querySelector('[data-principal]')?.focus();
+  }, [step]);
+
+  useEffect(() => {
+    const aoTeclar = (e) => {
+      if (e.key === 'Escape') onDone();
+      else if (e.key === 'ArrowRight') setStep((s) => Math.min(s + 1, STEPS.length - 1));
+      else if (e.key === 'ArrowLeft') setStep((s) => Math.max(s - 1, 0));
+    };
+    document.addEventListener('keydown', aoTeclar);
+    return () => document.removeEventListener('keydown', aoTeclar);
+  }, [onDone]);
+
   return (
     <div className={styles.overlay}>
-      <div className={styles.modal}>
+      <div
+        ref={modalRef}
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tutorial-titulo"
+        aria-describedby="tutorial-descricao"
+      >
 
         {/* Colored icon header */}
-        <div key={`icon-${step}`} className={styles.iconWrap} style={{ background: current.bg }}>
+        <div key={`icon-${step}`} className={styles.iconWrap} style={{ background: current.bg }} aria-hidden="true">
           <span className={styles.emoji}>{current.emoji}</span>
           <div className={styles.iconGlow} />
         </div>
@@ -58,8 +82,9 @@ const TutorialOverlay = ({ onDone }) => {
         {/* Step content — key forces re-animation on step change */}
         <div key={`content-${step}`} className={styles.stepContent}>
           <div className={styles.content}>
-            <h2 className={styles.title}>{current.title}</h2>
-            <p className={styles.description}>{current.description}</p>
+            <p className={styles.passo}>Passo {step + 1} de {STEPS.length}</p>
+            <h2 id="tutorial-titulo" className={styles.title}>{current.title}</h2>
+            <p id="tutorial-descricao" className={styles.description}>{current.description}</p>
           </div>
 
           {/* Dots */}
@@ -70,16 +95,19 @@ const TutorialOverlay = ({ onDone }) => {
                 className={`${styles.dot} ${i === step ? styles.dotActive : ''}`}
                 onClick={() => setStep(i)}
                 style={i === step ? { background: current.bg } : {}}
-                aria-label={`Passo ${i + 1}`}
+                aria-label={`Ir para o passo ${i + 1}`}
+                aria-current={i === step ? 'step' : undefined}
               />
             ))}
           </div>
 
           {/* Actions */}
           <div className={styles.actions}>
-            <button className={styles.skipBtn} onClick={onDone}>
-              {isLast ? '' : 'Pular tour'}
-            </button>
+            {!isLast && (
+              <button className={styles.skipBtn} onClick={onDone}>
+                Pular tour
+              </button>
+            )}
 
             <div className={styles.navBtns}>
               {step > 0 && (
@@ -88,6 +116,7 @@ const TutorialOverlay = ({ onDone }) => {
                 </button>
               )}
               <button
+                data-principal
                 className={styles.nextBtn}
                 style={{ background: current.bg }}
                 onClick={() => (isLast ? onDone() : setStep(s => s + 1))}

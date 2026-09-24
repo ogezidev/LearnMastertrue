@@ -10,6 +10,7 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 24px;
+  overflow-y: auto;
   animation: fadeIn 0.3s ease both;
 }
 
@@ -24,6 +25,9 @@
   border-radius: 28px;
   width: 100%;
   max-width: 440px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  margin: auto;
   box-shadow: 0 40px 100px rgba(17, 24, 39, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
   overflow: hidden;
   display: flex;
@@ -252,3 +256,78 @@
 :global(html[data-dark="true"]) .skipBtn:hover {
   color: #64748b;
 }
+
+.passo {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.skipBtn:focus-visible,
+.prevBtn:focus-visible,
+.nextBtn:focus-visible,
+.dot:focus-visible {
+  outline: 3px solid #368BFF;
+  outline-offset: 2px;
+}
+
+/* Celular: tudo cabe na tela (antes o modal passava da altura e escondia os botões) */
+@media (max-width: 600px) {
+  .overlay {
+    padding: 16px;
+    align-items: flex-start;
+  }
+
+  .modal {
+    border-radius: 22px;
+  }
+
+  .iconWrap {
+    padding: 24px 0 20px;
+  }
+
+  .emoji {
+    font-size: 52px;
+  }
+
+  .content {
+    padding: 20px 20px 12px;
+  }
+
+  .title {
+    font-size: 21px;
+  }
+
+  .description {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .dots {
+    padding: 10px 0 14px;
+  }
+
+  .actions {
+    padding: 0 16px 20px;
+    flex-wrap: wrap;
+  }
+
+  .prevBtn,
+  .nextBtn {
+    padding: 11px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .modal,
+  .iconWrap,
+  .emoji,
+  .stepContent {
+    animation: none;
+  }
+}
+

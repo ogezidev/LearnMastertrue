@@ -1,25 +1,15 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import styles from './PerfilPage.module.css';
 
 const PerfilPage = () => {
   const { user, atualizarNome, mainDecks, decks, dadosCarregados } = useApp();
-  const fileInputRef = useRef(null);
-  const [avatarUrl, setAvatarUrl] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [nameErro, setNameErro] = useState('');
   const [salvandoNome, setSalvandoNome] = useState(false);
 
   const totalCards = decks.reduce((sum, d) => sum + d.cards.length, 0);
-
-  const handleAvatarClick = () => fileInputRef.current?.click();
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setAvatarUrl(URL.createObjectURL(file));
-  };
 
   const startEditName = () => {
     setNameInput(user?.nome ?? '');
@@ -52,9 +42,8 @@ const PerfilPage = () => {
     if (e.key === 'Escape') { setEditingName(false); setNameErro(''); }
   };
 
-  const initials = user?.nome
-    ? user.nome.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : '?';
+  // Avatar = inicial do nome (atualiza na hora quando o nome muda)
+  const inicial = user?.nome?.trim()?.[0]?.toUpperCase() ?? '?';
 
   const stats = [
     {
@@ -98,28 +87,11 @@ const PerfilPage = () => {
     <div className={styles.page}>
       <div className={styles.mainCard}>
 
-        {/* Avatar flutuando acima do card */}
-        <div className={styles.avatarWrap} onClick={handleAvatarClick} title="Alterar foto">
+        {/* Avatar flutuando acima do card: a inicial do nome */}
+        <div className={styles.avatarWrap} aria-hidden="true">
           <div className={styles.avatarRing}>
-            {avatarUrl
-              ? <img className={styles.avatarImg} src={avatarUrl} alt="Avatar" />
-              : <span className={styles.avatarInitials}>{initials}</span>
-            }
+            <span className={styles.avatarInitials}>{inicial}</span>
           </div>
-          <div className={styles.avatarOverlay}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="white"/>
-              <path d="M9.5 3L8.17 4.5H5A2.5 2.5 0 0 0 2.5 7v11A2.5 2.5 0 0 0 5 20.5h14A2.5 2.5 0 0 0 21.5 18V7A2.5 2.5 0 0 0 19 4.5h-3.17L14.5 3h-5z" fill="white" opacity="0.7"/>
-            </svg>
-            <span>Alterar foto</span>
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className={styles.fileInput}
-            onChange={handleFileChange}
-          />
         </div>
 
         {/* Conteúdo do card */}

@@ -66,7 +66,7 @@ const MODES = {
       {
         id: 'sequencia',
         label: 'Acompanhamento de sequencia',
-        text: 'Acompanhe de perto a sequência de estudos do seu filho. Veja dias de ofensiva, progresso e desempenho em tempo real.',
+        text: 'Acompanhe de perto a sequência de estudos do seu filho. Veja o progresso e o desempenho em tempo real.',
         image: imgFamiliaSequencia,
       },
       {
