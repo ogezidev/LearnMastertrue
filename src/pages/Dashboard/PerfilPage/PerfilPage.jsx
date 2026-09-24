@@ -3,7 +3,7 @@ import { useApp } from '@/context/AppContext';
 import styles from './PerfilPage.module.css';
 
 const PerfilPage = () => {
-  const { user, atualizarNome, mainDecks, decks } = useApp();
+  const { user, atualizarNome, mainDecks, decks, dadosCarregados } = useApp();
   const fileInputRef = useRef(null);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [editingName, setEditingName] = useState(false);
@@ -162,7 +162,7 @@ const PerfilPage = () => {
             {stats.map((s) => (
               <div key={s.label} className={styles.statTile}>
                 <div className={styles.statIcon}>{s.icon}</div>
-                <div className={styles.statValue}>{s.value}</div>
+                <div className={styles.statValue}>{dadosCarregados ? s.value : '–'}</div>
                 <div className={styles.statLabel}>{s.label}</div>
               </div>
             ))}

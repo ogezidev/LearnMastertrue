@@ -170,5 +170,8 @@ export const getAvaliacoesAtuaisApi = () => req('GET', '/avaliacoes/atuais');
 // Grava uma avaliação no histórico (nivel: 'dificil' | 'bom' | 'facil')
 export const avaliarCardApi = (flashcardId, nivel) => req('POST', '/avaliacoes', { flashcardId, nivel });
 
+// Modo noturno e fonte para dislexia (só os campos enviados mudam)
+export const atualizarPreferenciasApi = (prefs) => req('PATCH', '/usuarios/me/preferencias', prefs);
+
 // Deck aberto ao entrar em Memorizar (null limpa)
 export const definirUltimoDeckApi = (deckId) => req('PUT', '/usuarios/me/ultimo-deck', { deckId });

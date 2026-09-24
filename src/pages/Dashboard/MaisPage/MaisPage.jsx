@@ -6,10 +6,11 @@ import { senhaValida } from '@/utils/senha';
 import styles from './MaisPage.module.css';
 
 /* ── Toggle switch ── */
-const Toggle = ({ checked, onChange }) => (
+const Toggle = ({ checked, onChange, label }) => (
   <button
     role="switch"
     aria-checked={checked}
+    aria-label={label}
     className={`${styles.toggle} ${checked ? styles.toggleOn : ''}`}
     onClick={onChange}
   >
@@ -34,6 +35,17 @@ const MaisPage = () => {
   const { user, alterarEmail, alterarSenha, logout, darkMode, toggleDarkMode, dyslexiaFont, toggleDyslexiaFont } = useApp();
   const navigate = useNavigate();
   const [view, setView] = useState('main'); // 'main' | 'email' | 'senha' | 'logout'
+  const [erroPreferencia, setErroPreferencia] = useState('');
+
+  // As preferências são gravadas no banco; se falhar, o interruptor volta e aparece o aviso
+  const alternar = async (acao) => {
+    setErroPreferencia('');
+    try {
+      await acao();
+    } catch (err) {
+      setErroPreferencia(err.message);
+    }
+  };
 
   /* ── Email form state ── */
   const [emailInput, setEmailInput] = useState('');
@@ -140,19 +152,20 @@ const MaisPage = () => {
           {/* ── MAIN VIEW ── */}
           {view === 'main' && (
             <>
+              {erroPreferencia && <p className={styles.formError} role="alert">{erroPreferencia}</p>}
               <Row
                 iconBg="#f0f4ff"
                 icon={<svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M13 3C9.13 3 6 6.13 6 10c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-1.26A7 7 0 0 0 13 3zm-1 14h2v1h-2v-1z" fill="#4A90D9"/><path d="M20 2.5a8.5 8.5 0 0 1-10 8.3A8.5 8.5 0 0 0 21.5 12c0-4.5-3.5-8.2-7.9-8.5A8.55 8.55 0 0 1 20 2.5z" fill="#1E3A5F"/></svg>}
                 title="Modo noturno"
                 desc="Ative o tema escuro para reduzir o cansaço visual"
-                control={<Toggle checked={darkMode} onChange={toggleDarkMode} />}
+                control={<Toggle checked={darkMode} onChange={() => alternar(toggleDarkMode)} label="Modo noturno" />}
               />
               <Row
                 iconBg="#f5f3ff"
                 icon={<svg width="26" height="26" viewBox="0 0 26 26" fill="none"><text x="3" y="20" fontSize="18" fontWeight="800" fill="#7c3aed" fontFamily="serif">A</text></svg>}
                 title="Fonte Dislexia"
                 desc="Utilize fonte apropriada para pessoas com dislexia"
-                control={<Toggle checked={dyslexiaFont} onChange={toggleDyslexiaFont} />}
+                control={<Toggle checked={dyslexiaFont} onChange={() => alternar(toggleDyslexiaFont)} label="Fonte para dislexia" />}
               />
               <Row
                 iconBg="#f0fdf4"
@@ -160,7 +173,7 @@ const MaisPage = () => {
                 title="Alterar E-mail"
                 desc={user?.email ?? 'Atualize seu endereço de e-mail'}
                 control={
-                  <button className={styles.arrowBtn} onClick={() => { setEmailInput(user?.email ?? ''); setView('email'); }}>
+                  <button className={styles.arrowBtn} aria-label="Alterar e-mail" onClick={() => { setEmailInput(user?.email ?? ''); setView('email'); }}>
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M6.5 4l5 5-5 5" stroke="#368BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   </button>
                 }
@@ -171,7 +184,7 @@ const MaisPage = () => {
                 title="Alterar Senha"
                 desc="Redefina sua senha de acesso"
                 control={
-                  <button className={styles.arrowBtn} onClick={() => setView('senha')}>
+                  <button className={styles.arrowBtn} aria-label="Alterar senha" onClick={() => setView('senha')}>
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M6.5 4l5 5-5 5" stroke="#368BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   </button>
                 }

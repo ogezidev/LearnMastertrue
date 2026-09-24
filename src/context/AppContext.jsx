@@ -3,7 +3,6 @@ import * as api from '@/services/api';
 
 const AppContext = createContext(null);
 
-const darkModeKey    = (userId) => `lm_dark_${userId}`;
 const tutorialKey    = (userId) => `lm_tutorial_${userId}`;
 
 export const AppProvider = ({ children }) => {
@@ -12,8 +11,6 @@ export const AppProvider = ({ children }) => {
   const [verificandoSessao, setVerificandoSessao] = useState(true);
   const iniciou = useRef(false);
 
-  const [darkMode, setDarkMode] = useState(false);
-  const [dyslexiaFont, setDyslexiaFont] = useState(() => localStorage.getItem('lm_dyslexia') === 'true');
   const [mainDecks, setMainDecks] = useState([]);
   const [decks, setDecks] = useState([]);
   const [cardRatings, setCardRatings] = useState({});
@@ -24,22 +21,27 @@ export const AppProvider = ({ children }) => {
   // Força nova renderização quando o tutorial é concluído (o valor vem do localStorage)
   const [, setTutorialVersao] = useState(0);
 
-  // Preferências são lidas por usuário sempre que outra conta entra
-  useEffect(() => {
-    setDarkMode(user?.id ? localStorage.getItem(darkModeKey(user.id)) === 'true' : false);
-  }, [user?.id]);
+  // Preferências vêm do banco junto com o usuário: acompanham a conta em qualquer dispositivo
+  const darkMode = !!user?.modoNoturno;
+  const dyslexiaFont = !!user?.fonteDislexia;
 
   useEffect(() => {
     document.body.classList.toggle('dyslexia-font', dyslexiaFont);
-    localStorage.setItem('lm_dyslexia', dyslexiaFont);
   }, [dyslexiaFont]);
 
-  const toggleDarkMode = () => {
-    const novo = !darkMode;
-    setDarkMode(novo);
-    if (user?.id) localStorage.setItem(darkModeKey(user.id), novo);
+  // Muda na tela na hora e grava no banco; se falhar, volta ao valor anterior
+  const atualizarPreferencia = async (campo, valor) => {
+    setUser(u => (u ? { ...u, [campo]: valor } : u));
+    try {
+      setUser(await api.atualizarPreferenciasApi({ [campo]: valor }));
+    } catch (err) {
+      setUser(u => (u ? { ...u, [campo]: !valor } : u));
+      throw err;
+    }
   };
-  const toggleDyslexiaFont = () => setDyslexiaFont(v => !v);
+
+  const toggleDarkMode = () => atualizarPreferencia('modoNoturno', !darkMode);
+  const toggleDyslexiaFont = () => atualizarPreferencia('fonteDislexia', !dyslexiaFont);
 
   const tutorialDone = !!user?.id && localStorage.getItem(tutorialKey(user.id)) === 'true';
 

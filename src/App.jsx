@@ -1,5 +1,21 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AppProvider, useApp } from '@/context/AppContext';
+
+// As páginas públicas (landing, login...) continuam sempre claras
+const AREA_LOGADA = ['/app', '/criar', '/memorizar'];
+
+const AplicarTema = () => {
+  const { darkMode } = useApp();
+  const { pathname } = useLocation();
+  const escuro = darkMode && AREA_LOGADA.some((p) => pathname.startsWith(p));
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-dark', escuro ? 'true' : 'false');
+  }, [escuro]);
+
+  return null;
+};
 
 const PrivateRoute = ({ children }) => {
   const { user, verificandoSessao } = useApp();
@@ -39,6 +55,7 @@ function App() {
   return (
     <AppProvider>
       <BrowserRouter>
+        <AplicarTema />
         <Routes>
           <Route path="/"                  element={<LandingPage />} />
           <Route path="/contato"           element={<ContatoPage />} />
