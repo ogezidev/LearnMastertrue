@@ -65,19 +65,15 @@ const StreakWidget = () => {
 };
 
 const HomePage = () => {
-  const { user, mainDecks, getUltimoDeck, getUltimoCard } = useApp();
+  const { user, mainDecks, ultimoDeck, dadosCarregados } = useApp();
   const navigate = useNavigate();
 
-  const ultimoDeck = getUltimoDeck();
-  const ultimoCard = getUltimoCard();
-  const isFirstVisit = mainDecks.length === 0;
+  const isFirstVisit = dadosCarregados && mainDecks.length === 0;
+  const learnDeckDoUltimo = mainDecks.find((md) => md.id === ultimoDeck?.mainDeckId);
 
+  // /memorizar abre o último deck estudado ou pede para escolher um
   const handleMemorizar = () => {
-    if (isFirstVisit) {
-      navigate('/criar/learndeck');
-    } else if (ultimoDeck) {
-      navigate(`/memorizar/${ultimoDeck.id}`);
-    }
+    navigate(isFirstVisit ? '/criar/learndeck' : '/memorizar');
   };
 
   return (
@@ -110,12 +106,16 @@ const HomePage = () => {
 
           <div className={styles.progressCard}>
             {!isFirstVisit && ultimoDeck && (
-              <span className={styles.progressDeckTag}>{ultimoDeck.nome}</span>
+              <span className={styles.progressDeckTag}>
+                {learnDeckDoUltimo ? `${learnDeckDoUltimo.nome} › ` : ''}{ultimoDeck.nome}
+              </span>
             )}
             <p className={styles.progressCardName}>
               {isFirstVisit
                 ? 'Que tal darmos o primeiro passo?'
-                : (ultimoCard ? ultimoCard.frente : '---')}
+                : ultimoDeck
+                  ? `Continue de onde parou: ${ultimoDeck.cards.length} ${ultimoDeck.cards.length === 1 ? 'card' : 'cards'}`
+                  : 'Escolha um deck para começar a estudar.'}
             </p>
           </div>
         </div>

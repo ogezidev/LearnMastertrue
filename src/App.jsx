@@ -29,6 +29,7 @@ import CriarFlashcardPage from '@/pages/Criar/CriarFlashcardPage';
 import VerTodosPage from '@/pages/Dashboard/VerTodosPage/VerTodosPage';
 import PerfilPage from '@/pages/Dashboard/PerfilPage/PerfilPage';
 import MaisPage from '@/pages/Dashboard/MaisPage/MaisPage';
+import EscolherDeckPage from '@/pages/Memorizar/EscolherDeckPage';
 import IntroPage from '@/pages/Memorizar/IntroPage';
 import EstudarPage from '@/pages/Memorizar/EstudarPage';
 import ConclusaoPage from '@/pages/Memorizar/ConclusaoPage';
@@ -49,6 +50,7 @@ function App() {
           <Route path="/criar/learndeck"   element={<PrivateRoute><CriarLearnDeckPage /></PrivateRoute>} />
           <Route path="/criar/deck"        element={<PrivateRoute><CriarDeckPage /></PrivateRoute>} />
           <Route path="/criar/flashcard"   element={<PrivateRoute><CriarFlashcardPage /></PrivateRoute>} />
+          <Route path="/memorizar"         element={<PrivateRoute><EscolherDeckPage /></PrivateRoute>} />
           <Route path="/memorizar/:deckId" element={<PrivateRoute><IntroPage /></PrivateRoute>} />
           <Route path="/memorizar/:deckId/estudar"   element={<PrivateRoute><EstudarPage /></PrivateRoute>} />
           <Route path="/memorizar/:deckId/concluido" element={<PrivateRoute><ConclusaoPage /></PrivateRoute>} />

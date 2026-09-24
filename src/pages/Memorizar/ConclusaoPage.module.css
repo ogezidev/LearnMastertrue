@@ -35,19 +35,6 @@
   left: -140px;
 }
 
-/* ── Partículas flutuantes ──────────────────────── */
-.particle {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  animation: particlePulse 3s ease-in-out infinite;
-}
-
-@keyframes particlePulse {
-  0%, 100% { opacity: 0;   transform: scale(0.5) translateY(0);     }
-  50%       { opacity: 0.7; transform: scale(1)   translateY(-14px); }
-}
-
 /* ── Container principal ────────────────────────── */
 .container {
   background: rgba(255, 255, 255, 0.07);
@@ -106,6 +93,8 @@
 }
 
 .deckLabel {
+  max-width: 100%;
+  overflow-wrap: anywhere;
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.45);
@@ -173,6 +162,8 @@
 }
 
 .ringText {
+  max-width: 120px;
+  text-align: center;
   font-size: 11px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.5);
@@ -198,21 +189,21 @@
   opacity: 0;
 }
 
-.statGreen {
+.statFacil {
   background: rgba(16, 185, 129, 0.16);
   border: 1px solid rgba(16, 185, 129, 0.3);
   animation: fadeUp 0.4s ease both;
   animation-delay: 0.85s;
 }
 
-.statBlue {
+.statBom {
   background: rgba(54, 139, 255, 0.16);
   border: 1px solid rgba(54, 139, 255, 0.3);
   animation: fadeUp 0.4s ease both;
   animation-delay: 0.95s;
 }
 
-.statRed {
+.statDificil {
   background: rgba(239, 68, 68, 0.16);
   border: 1px solid rgba(239, 68, 68, 0.3);
   animation: fadeUp 0.4s ease both;
@@ -226,9 +217,9 @@
   line-height: 1;
 }
 
-.statGreen .statNum { color: #34d399; }
-.statBlue  .statNum { color: #93c5fd; }
-.statRed   .statNum { color: #f87171; }
+.statFacil .statNum { color: #34d399; }
+.statBom  .statNum { color: #93c5fd; }
+.statDificil   .statNum { color: #f87171; }
 
 .statName {
   font-size: 10px;
@@ -326,4 +317,37 @@
   .ring     { width: 160px; height: 160px; }
   .ringCount { font-size: 42px; }
   .statNum  { font-size: 28px; }
+}
+
+/* Resumo lido por leitores de tela (o anel é só visual) */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.btnPrimary:focus-visible,
+.btnSecondary:focus-visible,
+.btnGhost:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .container,
+  .emoji,
+  .title,
+  .deckLabel,
+  .stat,
+  .statFacil,
+  .statBom,
+  .statDificil {
+    animation: none;
+    opacity: 1;
+  }
 }

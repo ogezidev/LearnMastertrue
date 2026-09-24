@@ -1,64 +1,73 @@
 /* ── Page ─────────────────────────────────────── */
 .page {
-  width: 100vw;
   min-height: 100vh;
   background: #f8f9fb;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 /* ── Header ──────────────────────────────────── */
 .header {
   display: flex;
   align-items: flex-start;
-  padding: 48px 48px 0;
-  gap: 24px;
+  gap: 16px;
+  padding: 32px 48px 0;
 }
 
-.headerLeft,
-.headerRight {
-  flex: 1;
-  display: flex;
-  align-items: center;
+.headerBtn {
+  flex-shrink: 0;
+  width: 64px;
+  background: none;
+  border: none;
+  color: #368BFF;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 6px 0;
+  text-align: left;
 }
 
-.headerRight {
-  justify-content: flex-end;
+.headerBtn:hover {
+  opacity: 0.7;
+}
+
+.headerSpacer {
+  flex-shrink: 0;
+  width: 64px;
 }
 
 .headerCenter {
-  flex: 2;
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .deckTitle {
-  font-size: 17px;
+  max-width: 100%;
+  font-size: 15px;
+  font-weight: 700;
+  color: #6b7280;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contador {
+  font-size: 18px;
   font-weight: 800;
   color: #368BFF;
-  letter-spacing: -0.2px;
-}
-
-.progressRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-}
-
-.progressLabel {
-  font-size: 12px;
-  font-weight: 700;
-  color: #b0b7c3;
-  white-space: nowrap;
-  min-width: 28px;
 }
 
 .progressBar {
-  flex: 1;
-  height: 7px;
+  width: 100%;
+  max-width: 520px;
+  height: 8px;
   background: #e4e7ec;
   border-radius: 100px;
   overflow: hidden;
@@ -68,23 +77,7 @@
   height: 100%;
   background: #368BFF;
   border-radius: 100px;
-  transition: width 0.4s ease;
-}
-
-.headerBtn {
-  background: none;
-  border: none;
-  color: #368BFF;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  padding: 6px 0;
-  transition: opacity 0.15s ease;
-}
-
-.headerBtn:hover {
-  opacity: 0.65;
+  transition: width 0.35s ease;
 }
 
 /* ── Main ────────────────────────────────────── */
@@ -93,24 +86,29 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 48px 48px 64px;
-  gap: 36px;
+  padding: 32px 48px 48px;
+  gap: 24px;
 }
 
-/* ── 3D Card Scene ───────────────────────────── */
+/* ── 3D Card ─────────────────────────────────── */
 .cardScene {
   width: 100%;
-  max-width: 820px;
-  height: 380px;
+  max-width: 760px;
+  height: 340px;
   perspective: 1400px;
   cursor: pointer;
-  animation: cardIn 0.4s cubic-bezier(0.34, 1.1, 0.64, 1) both;
+  border-radius: 24px;
+  animation: cardIn 0.35s cubic-bezier(0.34, 1.1, 0.64, 1) both;
+}
+
+.cardScene:focus-visible {
+  outline: 3px solid #368BFF;
+  outline-offset: 4px;
 }
 
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)     scale(1);   }
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .cardInner {
@@ -118,7 +116,7 @@
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transition: transform 0.55s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  transition: transform 0.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
 }
 
 .cardInnerFlipped {
@@ -131,211 +129,296 @@
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   border-radius: 24px;
-  padding: 44px 48px;
+  padding: 48px 40px 40px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-/* ── Front ───────────────────────────────────── */
 .cardFront {
   background: #ffffff;
   box-shadow: 0 6px 40px rgba(17, 24, 39, 0.09);
 }
 
-.cardLabel {
-  font-size: 12px;
-  font-weight: 700;
-  color: #c4cad5;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.cardText {
-  font-size: 26px;
-  font-weight: 800;
-  color: #368BFF;
-  line-height: 1.4;
-  margin: 0;
-  flex: 1;
-}
-
-.cardHint {
-  font-size: 13px;
-  font-weight: 600;
-  color: #d8dce6;
-  margin-top: auto;
-  align-self: center;
-}
-
-/* ── Back ────────────────────────────────────── */
 .cardBack {
   background: #368BFF;
-  box-shadow: 0 6px 40px rgba(54, 139, 255, 0.3);
+  box-shadow: 0 10px 40px rgba(54, 139, 255, 0.35);
   transform: rotateY(180deg);
 }
 
+.cardLabel,
 .cardLabelBack {
+  position: absolute;
+  top: 20px;
+  left: 24px;
   font-size: 12px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+}
+
+.cardLabel {
+  color: #368BFF;
+}
+
+.cardLabelBack {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* O texto quebra dentro do card; se ainda assim não couber, rola por dentro */
+.cardText,
+.cardTextBack {
+  margin: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cardText {
+  color: #111111;
 }
 
 .cardTextBack {
-  font-size: 22px;
-  font-weight: 700;
   color: #ffffff;
-  line-height: 1.55;
-  margin: 0;
 }
 
-/* ── Actions ─────────────────────────────────── */
-.actions {
+.textoMedio {
+  font-size: 22px;
+}
+
+.textoPequeno {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.cardHint {
+  position: absolute;
+  bottom: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+/* ── Avaliação ───────────────────────────────── */
+.avaliacao {
+  width: 100%;
+  max-width: 760px;
+  min-height: 108px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
+  gap: 12px;
 }
 
-.actionsVisible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: all;
-}
-
-/* ── Prev Button ─────────────────────────────── */
-.prevBtn {
-  background: none;
-  border: none;
-  color: #b0b7c3;
-  font-size: 13px;
+.pergunta {
+  margin: 0;
+  font-size: 15px;
   font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  padding: 4px 0;
-  transition: color 0.15s ease;
+  color: #4b5563;
 }
 
-.prevBtn:hover:not(:disabled) {
-  color: #368BFF;
-}
-
-.prevBtn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-/* ── Rating Buttons ──────────────────────────── */
 .ratingBtns {
-  display: flex;
-  gap: 14px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
 .ratingBtn {
+  position: relative;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 16px 12px;
+  font-size: 17px;
+  font-weight: 800;
+  font-family: inherit;
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.ratingBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.ratingBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.ratingBtn:focus-visible,
+.navBtn:focus-visible,
+.revelarBtn:focus-visible {
+  outline: 3px solid #111111;
+  outline-offset: 2px;
+}
+
+.ratingDificil { background: #ef4444; }
+.ratingBom     { background: #2563eb; }
+.ratingFacil   { background: #16a34a; }
+
+.ratingEscolhido {
+  border-color: #111111;
+}
+
+.tecla {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.revelarBtn {
+  width: 100%;
+  max-width: 360px;
+  background: #368BFF;
+  color: #ffffff;
   border: none;
-  border-radius: 100px;
-  padding: 16px 36px;
-  font-size: 15px;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 17px;
   font-weight: 800;
   font-family: inherit;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 6px 16px rgba(54, 139, 255, 0.3);
 }
 
-.ratingBtn:hover {
-  transform: translateY(-2px);
+.salvando {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
 }
 
-.ratingRed {
-  background: rgba(239, 68, 68, 0.12);
-  color: #dc2626;
+/* ── Navegação ───────────────────────────────── */
+.navegacao {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.ratingRed:hover {
-  background: rgba(239, 68, 68, 0.2);
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
+.navBtn {
+  background: #ffffff;
+  border: 2px solid #e4e7ec;
+  color: #374151;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
 }
 
-.ratingBlue {
-  background: rgba(54, 139, 255, 0.12);
+.navBtn:hover:not(:disabled) {
+  border-color: #368BFF;
   color: #368BFF;
 }
 
-.ratingBlue:hover {
-  background: rgba(54, 139, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(54, 139, 255, 0.2);
+.navBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.ratingGreen {
-  background: rgba(34, 197, 94, 0.12);
-  color: #16a34a;
-}
-
-.ratingGreen:hover {
-  background: rgba(34, 197, 94, 0.2);
-  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.2);
-}
-
-/* ── Empty State ─────────────────────────────── */
+/* ── Vazio / não encontrado ──────────────────── */
 .emptyCenter {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 16px;
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  color: #4b5563;
 }
 
-/* ── Responsivo ─────────────────────────────── */
-@media (max-width: 600px) {
+/* ── Tablet ──────────────────────────────────── */
+@media (max-width: 900px) {
   .header {
-    padding: 20px 20px 0;
-    gap: 12px;
-  }
-
-  .headerLeft,
-  .headerRight {
-    flex: 0;
+    padding: 24px 24px 0;
   }
 
   .main {
-    padding: 24px 16px 32px;
-    gap: 20px;
+    padding: 24px 24px 40px;
+  }
+}
+
+/* ── Celular ─────────────────────────────────── */
+@media (max-width: 600px) {
+  .header {
+    padding: 16px 16px 0;
+    gap: 8px;
+  }
+
+  .headerBtn,
+  .headerSpacer {
+    width: 44px;
+  }
+
+  .main {
+    padding: 16px 16px 28px;
+    gap: 16px;
   }
 
   .cardScene {
-    height: 240px;
+    height: 280px;
   }
 
   .cardFront,
   .cardBack {
-    padding: 24px 24px;
-    border-radius: 18px;
+    padding: 44px 20px 36px;
   }
 
-  .cardText {
-    font-size: 18px;
-  }
-
+  .cardText,
   .cardTextBack {
-    font-size: 16px;
+    font-size: 22px;
   }
 
-  .ratingBtn {
-    padding: 12px 20px;
-    font-size: 13px;
+  .textoMedio {
+    font-size: 19px;
+  }
+
+  .textoPequeno {
+    font-size: 16px;
   }
 
   .ratingBtns {
     gap: 8px;
+  }
+
+  .ratingBtn {
+    padding: 14px 6px;
+    font-size: 15px;
+  }
+
+  .navBtn {
+    padding: 12px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardInner,
+  .cardScene {
+    transition: none;
+    animation: none;
   }
 }
 
@@ -344,43 +427,26 @@
   background: #0f172a;
 }
 
-:global(html[data-dark="true"]) .deckTitle {
-  color: #93c5fd;
+:global(html[data-dark="true"]) .cardFront {
+  background: #1e293b;
+}
+
+:global(html[data-dark="true"]) .cardText {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .navBtn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .pergunta,
+:global(html[data-dark="true"]) .deckTitle,
+:global(html[data-dark="true"]) .emptyCenter {
+  color: #94a3b8;
 }
 
 :global(html[data-dark="true"]) .progressBar {
   background: #334155;
-}
-
-:global(html[data-dark="true"]) .progressLabel {
-  color: #64748b;
-}
-
-:global(html[data-dark="true"]) .headerBtn {
-  color: #93c5fd;
-}
-
-:global(html[data-dark="true"]) .cardFront {
-  background: #1e293b;
-  box-shadow: 0 6px 40px rgba(0,0,0,0.35);
-}
-
-:global(html[data-dark="true"]) .cardLabel {
-  color: #475569;
-}
-
-:global(html[data-dark="true"]) .cardText {
-  color: #93c5fd;
-}
-
-:global(html[data-dark="true"]) .cardHint {
-  color: #334155;
-}
-
-:global(html[data-dark="true"]) .prevBtn {
-  color: #475569;
-}
-
-:global(html[data-dark="true"]) .prevBtn:hover:not(:disabled) {
-  color: #93c5fd;
 }

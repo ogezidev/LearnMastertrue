@@ -16,7 +16,6 @@ export const AppProvider = ({ children }) => {
   const [dyslexiaFont, setDyslexiaFont] = useState(() => localStorage.getItem('lm_dyslexia') === 'true');
   const [mainDecks, setMainDecks] = useState([]);
   const [decks, setDecks] = useState([]);
-  const [progresso, setProgresso] = useState({ ultimoDeckId: null, ultimoCardId: null });
   const [cardRatings, setCardRatings] = useState({});
   const [loading, setLoading] = useState(false);
   // Os dados do usuário já chegaram do servidor? (evita mostrar "vazio" antes da hora)
@@ -83,7 +82,6 @@ export const AppProvider = ({ children }) => {
     setUser(null);
     setMainDecks([]);
     setDecks([]);
-    setProgresso({ ultimoDeckId: null, ultimoCardId: null });
     setCardRatings({});
     setDadosCarregados(false);
     setErroDados(null);
@@ -222,22 +220,19 @@ export const AppProvider = ({ children }) => {
     );
   };
 
-  // ── Ratings & Progresso ──
-  // Até a Fase 5, a tela de estudo ainda usa os nomes antigos e só guarda na memória
-  const NIVEL_ANTIGO = { esqueci: 'dificil', 'lembro-pouco': 'bom', lembro: 'facil' };
-  const rateCard = (cardId, rating) => {
-    setCardRatings(prev => ({ ...prev, [cardId]: NIVEL_ANTIGO[rating] ?? rating }));
+  // ── Avaliações e último deck ──
+  // Grava no banco; só atualiza a tela depois que o servidor confirmar
+  const rateCard = async (cardId, nivel) => {
+    await api.avaliarCardApi(cardId, nivel);
+    setCardRatings(prev => ({ ...prev, [cardId]: nivel }));
   };
 
-  const updateProgresso = (data) => {
-    setProgresso(prev => ({ ...prev, ...data }));
+  const definirUltimoDeck = async (deckId) => {
+    setUser(await api.definirUltimoDeckApi(deckId));
   };
 
-  const ultimoDeck = decks.find(d => d.id === progresso.ultimoDeckId) ?? null;
-  const ultimoCard = ultimoDeck?.cards.find(c => c.id === progresso.ultimoCardId) ?? null;
-
-  const getUltimoDeck = () => ultimoDeck;
-  const getUltimoCard = () => ultimoCard;
+  // Último deck estudado (vem do banco); some se o deck foi excluído
+  const ultimoDeck = decks.find(d => d.id === user?.ultimoDeckId) ?? null;
 
   return (
     <AppContext.Provider value={{
@@ -247,12 +242,12 @@ export const AppProvider = ({ children }) => {
       tutorialDone, markTutorialDone,
       darkMode, toggleDarkMode,
       dyslexiaFont, toggleDyslexiaFont,
-      mainDecks, decks, progresso,
-      getUltimoDeck, getUltimoCard,
+      mainDecks, decks,
+      ultimoDeck, definirUltimoDeck,
       createMainDeck, deleteMainDeck, updateMainDeck,
       createDeck, deleteDeck, updateDeck,
       createCard, createCards, deleteCard, updateCard,
-      updateProgresso, cardRatings, rateCard,
+      cardRatings, rateCard,
     }}>
       {children}
     </AppContext.Provider>

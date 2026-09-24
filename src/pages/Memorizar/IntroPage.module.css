@@ -1,19 +1,23 @@
+/* Usado pela tela "Antes de começar" (IntroPage) e pela escolha de deck (EscolherDeckPage) */
+
 /* ── Page ─────────────────────────────────────── */
 .page {
-  position: fixed;
-  inset: 0;
+  position: relative;
+  min-height: 100vh;
   background: #368BFF;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.topo {
+  position: relative;
+  z-index: 10;
+  padding: 28px 36px 0;
 }
 
 /* ── Back Button ─────────────────────────────── */
 .backBtn {
-  position: absolute;
-  top: 28px;
-  left: 36px;
   background: rgba(255, 255, 255, 0.18);
   border: none;
   color: #ffffff;
@@ -24,19 +28,29 @@
   padding: 8px 16px;
   border-radius: 10px;
   transition: background 0.15s ease;
-  z-index: 10;
 }
 
 .backBtn:hover {
   background: rgba(255, 255, 255, 0.28);
 }
 
+.backBtn:focus-visible,
+.studyBtn:focus-visible,
+.linkBtn:focus-visible,
+.opcao:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
 /* ── Center Content ──────────────────────────── */
 .center {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 20px;
+  padding: 32px 24px 64px;
   text-align: center;
   z-index: 10;
   position: relative;
@@ -50,6 +64,7 @@
 
 /* ── Badge ───────────────────────────────────── */
 .badge {
+  max-width: 100%;
   background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
   font-size: 14px;
@@ -57,27 +72,31 @@
   padding: 6px 18px;
   border-radius: 100px;
   letter-spacing: 0.2px;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
 }
 
 /* ── Deck Name ───────────────────────────────── */
 .deckName {
-  font-size: clamp(52px, 8vw, 96px);
+  max-width: 900px;
+  font-size: clamp(34px, 7vw, 84px);
   font-weight: 800;
   color: #ffffff;
   margin: 0;
-  line-height: 1.05;
-  letter-spacing: -2px;
+  line-height: 1.08;
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
 }
 
 /* ── Card Count ──────────────────────────────── */
 .cardCount {
   font-size: 16px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.8);
   margin: -8px 0 4px;
 }
 
-/* ── Study Button ────────────────────────────── */
+/* ── Buttons ─────────────────────────────────── */
 .studyBtn {
   background: #ffffff;
   color: #368BFF;
@@ -85,26 +104,183 @@
   border-radius: 16px;
   padding: 18px 0;
   width: 480px;
-  max-width: 90vw;
+  max-width: 100%;
   font-size: 18px;
   font-weight: 800;
   font-family: inherit;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
   margin-top: 8px;
 }
 
-.studyBtn:hover {
+.studyBtn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.studyBtn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
 }
 
 /* ── Empty State ─────────────────────────────── */
 .emptyMsg {
   font-size: 20px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.92);
   margin: 0 0 8px;
+}
+
+/* ── Escolha de deck ─────────────────────────── */
+.escolha {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 24px 64px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  animation: cardIn 0.4s cubic-bezier(0.34, 1.1, 0.64, 1) both;
+}
+
+.escolhaTitulo {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 800;
+  color: #ffffff;
+  text-align: center;
+}
+
+.escolhaSub {
+  margin: -12px 0 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.grupoTitulo {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  overflow-wrap: anywhere;
+}
+
+.grupoLista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.opcao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  text-align: left;
+  background: #ffffff;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 16px 18px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.opcao:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.opcaoAtual {
+  border-color: #fbbf24;
+}
+
+.opcaoNome {
+  max-width: 100%;
+  font-size: 16px;
+  font-weight: 800;
+  color: #111111;
+  overflow-wrap: anywhere;
+}
+
+.opcaoMeta {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+/* ── Decorative Blobs ────────────────────────── */
+.blob1,
+.blob2 {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  pointer-events: none;
+}
+
+.blob1 {
+  top: -180px;
+  left: -180px;
+  width: 560px;
+  height: 560px;
+}
+
+.blob2 {
+  bottom: -200px;
+  right: -150px;
+  width: 640px;
+  height: 640px;
+}
+
+/* ── Celular ─────────────────────────────────── */
+@media (max-width: 600px) {
+  .topo {
+    padding: 16px 16px 0;
+  }
+
+  .center,
+  .escolha {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .grupoLista {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .center,
+  .escolha {
+    animation: none;
+  }
 }
 
 /* ── Dark Mode ───────────────────────────────── */
@@ -112,25 +288,19 @@
   background: #1e3a8a;
 }
 
-/* ── Decorative Blobs ────────────────────────── */
-.blob1 {
-  position: absolute;
-  top: -180px;
-  left: -180px;
-  width: 560px;
-  height: 560px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  pointer-events: none;
+:global(html[data-dark="true"]) .opcao {
+  background: #1e293b;
 }
 
-.blob2 {
-  position: absolute;
-  bottom: -200px;
-  right: -150px;
-  width: 640px;
-  height: 640px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  pointer-events: none;
+:global(html[data-dark="true"]) .opcaoNome {
+  color: #e2e8f0;
+}
+
+:global(html[data-dark="true"]) .opcaoMeta {
+  color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .studyBtn {
+  background: #e2e8f0;
+  color: #1e3a8a;
 }

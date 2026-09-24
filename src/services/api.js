@@ -166,3 +166,9 @@ export const deleteFlashcardApi = (id) => req('DELETE', `/flashcards/${id}`);
 // ── Avaliações ────────────────────────────────────
 // { flashcardId: 'dificil' | 'bom' | 'facil' } com a avaliação mais recente de cada card
 export const getAvaliacoesAtuaisApi = () => req('GET', '/avaliacoes/atuais');
+
+// Grava uma avaliação no histórico (nivel: 'dificil' | 'bom' | 'facil')
+export const avaliarCardApi = (flashcardId, nivel) => req('POST', '/avaliacoes', { flashcardId, nivel });
+
+// Deck aberto ao entrar em Memorizar (null limpa)
+export const definirUltimoDeckApi = (deckId) => req('PUT', '/usuarios/me/ultimo-deck', { deckId });
