@@ -116,8 +116,8 @@ export const logoutApi = () =>
 export const recuperarSenhaApi = (email) =>
   reqPublica('POST', '/auth/recuperar', { email });
 
-export const redefinirSenhaApi = (token, novaSenha) =>
-  reqPublica('POST', '/auth/redefinir', { token, novaSenha });
+export const redefinirSenhaApi = (email, codigo, novaSenha) =>
+  reqPublica('POST', '/auth/redefinir', { email, codigo, novaSenha });
 
 // ── Conta ─────────────────────────────────────────
 export const atualizarNomeApi = (nome) => req('PATCH', '/usuarios/me', { nome });

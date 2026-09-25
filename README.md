@@ -20,7 +20,7 @@ Para apontar para outro endereço de API, crie um `.env` com `VITE_API_URL=https
 
 | Área | O que faz |
 |---|---|
-| Conta | Cadastro com regras de senha visíveis, login com "Continuar logado", recuperação de senha por e-mail (link de 30 min, uso único), troca de nome, e-mail e senha (exigem a senha atual) |
+| Conta | Cadastro com regras de senha visíveis, login com "Continuar logado", recuperação de senha por código de 6 dígitos enviado por e-mail (30 min, uso único), troca de nome, e-mail e senha (exigem a senha atual) |
 | Sessão | Token de acesso só em memória + refresh token em cookie httpOnly; renovação automática; logout invalida a sessão no servidor |
 | Criar | LearnDecks, decks e até 5 cards por vez, com prévia e botão **Virar**; limites de 50 (nomes) e 200 (frente/verso); breadcrumb e "Deseja prosseguir?" ao fim de cada etapa |
 | Ver todos | Navegação pela URL (`/app/decks/:learnDeck/:deck`), busca global (nomes, frente e verso, sem diferenciar acentos), filtro Difícil / Bom / Fácil / Não avaliado, editar e excluir com confirmação da quantidade afetada |
@@ -41,7 +41,7 @@ src/
 ├── utils/senha.js          regras de senha (as mesmas do backend)
 ├── components/             Breadcrumb, Dialogo, EstadoTela, SenhaRegras, Sidebar, TutorialOverlay...
 └── pages/
-    ├── Login, Cadastro, EsqueceuSenha (inclui RedefinirSenhaPage)
+    ├── Login, Cadastro, EsqueceuSenha (e-mail → código + nova senha)
     ├── Criar/              LearnDeck, Deck e Flashcards
     ├── Dashboard/          Início, Criar, Ver todos, Perfil, Mais
     └── Memorizar/          Escolher deck, Antes de começar, Estudo, Conclusão

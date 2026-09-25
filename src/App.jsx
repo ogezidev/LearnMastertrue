@@ -34,7 +34,6 @@ import ContatoPage from '@/pages/Contato/ContatoPage';
 import LoginPage from '@/pages/Login/LoginPage';
 import CadastroPage from '@/pages/Cadastro/CadastroPage';
 import EsqueceuSenhaPage from '@/pages/EsqueceuSenha/EsqueceuSenhaPage';
-import RedefinirSenhaPage from '@/pages/EsqueceuSenha/RedefinirSenhaPage';
 import QuemSomosPage from '@/pages/QuemSomos/QuemSomosPage';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import HomePage from '@/pages/Dashboard/HomePage';
@@ -62,7 +61,6 @@ function App() {
           <Route path="/entrar"            element={<LoginPage />} />
           <Route path="/cadastro"          element={<CadastroPage />} />
           <Route path="/esqueceu-senha"    element={<EsqueceuSenhaPage />} />
-          <Route path="/redefinir-senha"   element={<RedefinirSenhaPage />} />
           <Route path="/quem-somos"        element={<QuemSomosPage />} />
           <Route path="/criar/learndeck"   element={<PrivateRoute><CriarLearnDeckPage /></PrivateRoute>} />
           <Route path="/criar/deck"        element={<PrivateRoute><CriarDeckPage /></PrivateRoute>} />

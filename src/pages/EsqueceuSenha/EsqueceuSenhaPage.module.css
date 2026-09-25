@@ -227,6 +227,39 @@
   text-decoration: underline;
 }
 
+/* Ações em texto (Reenviar código / Usar outro e-mail) */
+.linkBotao {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: #2563EB;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.linkBotao:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.linkBotao:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.inputCodigo {
+  font-size: 22px;
+  letter-spacing: 0.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.aviso {
+  font-size: 13px;
+  color: #16a34a;
+  font-weight: 600;
+}
+
 /* ── Coluna imagem ─────────────────────────────── */
 .imageCol {
   flex: 0 0 480px;
@@ -322,4 +355,8 @@
 
 :global(html[data-dark="true"]) .sucessoMsg {
   color: #94a3b8;
+}
+
+:global(html[data-dark="true"]) .linkBotao {
+  color: #60a5fa;
 }
