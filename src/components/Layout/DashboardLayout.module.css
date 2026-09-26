@@ -8,7 +8,8 @@
   flex: 1;
   min-width: 0;
   display: flex;
-  padding: 28px;
+  align-items: center; /* painel no meio da altura da tela */
+  padding: 40px 36px;
   box-sizing: border-box;
 }
 
@@ -20,7 +21,8 @@
   flex-direction: column;
   width: 100%;
   max-width: 1420px;
-  min-height: calc(100vh - 56px);
+  /* retângulo: altura fixa (até 660px); o conteúdo que passar rola por dentro */
+  height: clamp(460px, calc(100vh - 80px), 660px);
   margin: 0 auto;
   background: #2f86ff;
   border-radius: 22px;
@@ -55,6 +57,11 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: inherit;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
   animation: conteudoEntra 0.28s ease-out both;
 }
 
@@ -71,8 +78,9 @@
 }
 
 @media (max-width: 900px) {
-  .main { padding: 16px; }
-  .painel { min-height: calc(100vh - 32px); border-radius: 18px; }
+  .main { padding: 16px; align-items: stretch; }
+  .painel { height: auto; min-height: calc(100vh - 32px); border-radius: 18px; }
+  .conteudo { overflow: visible; }
 }
 
 @media (max-width: 600px) {

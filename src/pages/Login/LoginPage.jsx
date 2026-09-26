@@ -4,6 +4,7 @@ import { useApp } from '@/context/AppContext';
 import Header from '@/components/Header/Header';
 import styles from './LoginPage.module.css';
 import imgLogin from '@/assets/images/ImagemLogin.png';
+import CampoSenha from '@/components/CampoSenha/CampoSenha';
 
 const LoginPage = () => {
   const { login, user } = useApp();
@@ -63,8 +64,7 @@ const LoginPage = () => {
               </div>
 
               <div className={styles.fieldGroup}>
-                <input
-                  type="password"
+                <CampoSenha
                   className={styles.input}
                   placeholder="Senha"
                   value={senha}

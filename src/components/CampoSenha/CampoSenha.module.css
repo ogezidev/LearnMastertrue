@@ -1,0 +1,33 @@
+.grupo {
+  position: relative;
+  width: 100%;
+}
+
+/* espaço para o botão do olho não cobrir o texto */
+.grupo .campo {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 48px;
+}
+
+.olho {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.olho:hover { color: #111827; background: rgba(15, 23, 42, 0.06); }
+.olho:focus-visible { outline: 2px solid #368bff; outline-offset: 1px; }
+
+:global(html[data-dark="true"]) .olho { color: #94a3b8; }
+:global(html[data-dark="true"]) .olho:hover { color: #e2e8f0; background: rgba(148, 163, 184, 0.12); }

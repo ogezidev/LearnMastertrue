@@ -6,6 +6,7 @@ import { recuperarSenhaApi, redefinirSenhaApi } from '@/services/api';
 import { senhaValida } from '@/utils/senha';
 import imgLogin from '@/assets/images/ImagemLogin.png';
 import styles from './EsqueceuSenhaPage.module.css';
+import CampoSenha from '@/components/CampoSenha/CampoSenha';
 
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODIGO_VALIDO = /^\d{6}$/;
@@ -161,9 +162,8 @@ const EsqueceuSenhaPage = () => {
 
         <div className={styles.fieldGroup}>
           <label className={styles.label} htmlFor="nova-senha">Nova senha</label>
-          <input
+          <CampoSenha
             id="nova-senha"
-            type="password"
             className={styles.input}
             value={senha}
             onChange={(e) => { setSenha(e.target.value); setErro(''); }}
@@ -174,9 +174,8 @@ const EsqueceuSenhaPage = () => {
 
         <div className={styles.fieldGroup}>
           <label className={styles.label} htmlFor="confirmar-senha">Confirmar nova senha</label>
-          <input
+          <CampoSenha
             id="confirmar-senha"
-            type="password"
             className={`${styles.input} ${confirmacao && senha !== confirmacao ? styles.inputError : ''}`}
             value={confirmacao}
             onChange={(e) => { setConfirmacao(e.target.value); setErro(''); }}

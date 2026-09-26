@@ -6,6 +6,7 @@ import SenhaRegras from '@/components/SenhaRegras/SenhaRegras';
 import { senhaValida as validarSenha } from '@/utils/senha';
 import ImagemCadastro from '@/assets/images/ImagemCadastro.png';
 import styles from './CadastroPage.module.css';
+import CampoSenha from '@/components/CampoSenha/CampoSenha';
 
 export default function Cadastro() {
   const { cadastrar, user } = useApp();
@@ -88,8 +89,7 @@ export default function Cadastro() {
               </div>
 
               <div className={styles.fieldGroup}>
-                <input
-                  type="password"
+                <CampoSenha
                   placeholder="Senha"
                   className={styles.input}
                   value={senha}
