@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { Carregando, ErroCarregar, MensagemErro } from '@/components/EstadoTela/EstadoTela';
 import styles from './EstudarPage.module.css';
@@ -16,11 +16,14 @@ const tamanhoTexto = (texto) =>
 
 const EstudarPage = () => {
   const { deckId } = useParams();
-  const { decks, mainDecks, rateCard, dadosCarregados, erroDados, recarregarDados } = useApp();
+  const { decks, mainDecks, rateCard, cardRatings, dadosCarregados, erroDados, recarregarDados } = useApp();
+  const [params] = useSearchParams();
   const navigate = useNavigate();
 
   const deck = decks.find((d) => d.id === Number(deckId));
-  const cards = deck?.cards ?? [];
+  // ?so=1,2,3 estuda só esses cards (ex.: "Rever os difíceis" na conclusão)
+  const somente = (params.get('so') ?? '').split(',').map(Number).filter(Boolean);
+  const cards = (deck?.cards ?? []).filter((c) => somente.length === 0 || somente.includes(c.id));
   const learnDeck = mainDecks.find((md) => md.id === deck?.mainDeckId);
 
   // A sessão sempre começa no primeiro card do deck
@@ -29,6 +32,11 @@ const EstudarPage = () => {
   const [sessao, setSessao] = useState({}); // { cardId: nivel } avaliados nesta sessão
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
+  const [inicio] = useState(() => Date.now());
+
+  // Avaliações de antes desta sessão, para a conclusão mostrar o que melhorou ou piorou
+  const anteriores = useRef(null);
+  if (dadosCarregados && !anteriores.current) anteriores.current = { ...cardRatings };
 
   const total = cards.length;
   const card = cards[Math.min(index, total - 1)];
@@ -36,7 +44,17 @@ const EstudarPage = () => {
 
   const finalizar = (resultado = sessao) => {
     navigate(`/memorizar/${deckId}/concluido`, {
-      state: { deckId: Number(deckId), deckNome: deck.nome, total, sessao: resultado },
+      state: {
+        deckId: Number(deckId),
+        deckNome: deck.nome,
+        learnDeckNome: learnDeck?.nome ?? '',
+        total,
+        sessao: resultado,
+        cardIds: cards.map((c) => c.id),
+        anteriores: anteriores.current ?? {},
+        duracaoMs: Date.now() - inicio,
+        parcial: somente.length > 0,
+      },
     });
   };
 
