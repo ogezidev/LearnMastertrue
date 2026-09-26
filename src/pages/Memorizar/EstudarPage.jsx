@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { Carregando, ErroCarregar, MensagemErro } from '@/components/EstadoTela/EstadoTela';
+import Icone from '@/components/Icone/Icone';
+import { visualDoAssunto } from '@/utils/assunto';
 import styles from './EstudarPage.module.css';
 
 // Apenas três níveis; as teclas 1, 2 e 3 também avaliam
 const NIVEIS = [
-  { key: 'dificil', label: 'Difícil', tecla: '1', style: styles.ratingDificil },
-  { key: 'bom',     label: 'Bom',     tecla: '2', style: styles.ratingBom },
-  { key: 'facil',   label: 'Fácil',   tecla: '3', style: styles.ratingFacil },
+  { key: 'dificil', label: 'Difícil', desc: 'Não lembrei',         tecla: '1', style: styles.ratingDificil },
+  { key: 'bom',     label: 'Bom',     desc: 'Lembrei com esforço', tecla: '2', style: styles.ratingBom },
+  { key: 'facil',   label: 'Fácil',   desc: 'Lembrei na hora',     tecla: '3', style: styles.ratingFacil },
 ];
 
 const tamanhoTexto = (texto) =>
@@ -141,20 +143,28 @@ const EstudarPage = () => {
   }
 
   const nivelNaSessao = sessao[card.id];
+  const nivelAnterior = anteriores.current?.[card.id];
   const progresso = Math.round(((index + 1) / total) * 100);
+  // Cards que ainda vêm depois: aparecem como fichas empilhadas atrás
+  const restantes = Math.min(total - index - 1, 2);
+  const visual = visualDoAssunto(learnDeck?.nome ?? deck.nome, learnDeck?.id);
+  const corDoAssunto = { '--cor': visual.cor, '--cor-suave': visual.suave, '--cor-escura': visual.escuro };
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} style={corDoAssunto}>
 
-      {/* ── Header ── */}
+      {/* ── Topo ── */}
       <header className={styles.header}>
-        <button className={styles.headerBtn} onClick={sair}>Sair</button>
+        <button className={styles.headerBtn} onClick={sair}>
+          <Icone nome="voltar" tamanho={18} />
+          <span>Sair</span>
+        </button>
 
         <div className={styles.headerCenter}>
           <span className={styles.deckTitle}>
-            {learnDeck ? `${learnDeck.nome} › ` : ''}{deck.nome}
+            <span className={styles.deckIcone}><Icone nome={visual.icone} tamanho={14} /></span>
+            <span className={styles.deckNome}>{learnDeck ? `${learnDeck.nome} › ` : ''}{deck.nome}</span>
           </span>
-          <span className={styles.contador} aria-live="polite">Card {index + 1} de {total}</span>
           <div
             className={styles.progressBar}
             role="progressbar"
@@ -167,47 +177,103 @@ const EstudarPage = () => {
           </div>
         </div>
 
-        <span className={styles.headerSpacer} aria-hidden="true" />
+        <span className={styles.contador} aria-live="polite">
+          <strong>{index + 1}</strong> de {total}
+        </span>
       </header>
 
-      {/* ── Card ── */}
+      {/* ── Card no centro da tela ── */}
       <main className={styles.main}>
-        <div
-          key={card.id}
-          className={styles.cardScene}
-          onClick={revelar}
-          role="button"
-          tabIndex={0}
-          aria-label={revelado ? 'Verso revelado' : 'Revelar o verso do card'}
-          onKeyDown={(e) => {
-            if ((e.key === 'Enter' || e.key === ' ') && !revelado) {
-              e.preventDefault();
-              e.stopPropagation();
-              revelar();
-            }
-          }}
-        >
-          <div className={`${styles.cardInner} ${revelado ? styles.cardInnerFlipped : ''}`}>
-            <div className={styles.cardFront} aria-hidden={revelado}>
-              <span className={styles.cardLabel}>Frente</span>
-              <p className={`${styles.cardText} ${tamanhoTexto(card.frente)}`}>{card.frente}</p>
-              {!revelado && <span className={styles.cardHint}>Toque ou aperte espaço para revelar</span>}
-            </div>
+        <div className={styles.palco}>
+          <button
+            type="button"
+            className={styles.seta}
+            onClick={anterior}
+            disabled={index === 0 || salvando}
+            aria-label="Card anterior"
+          >
+            <Icone nome="voltar" tamanho={20} />
+          </button>
 
-            <div className={styles.cardBack} aria-hidden={!revelado}>
-              <span className={styles.cardLabelBack}>Verso</span>
-              <p className={`${styles.cardTextBack} ${tamanhoTexto(card.verso)}`}>{card.verso}</p>
+          <div className={`${styles.pilha} ${styles[`pilha${restantes}`]}`}>
+            <div
+              key={card.id}
+              className={styles.cardScene}
+              onClick={revelar}
+              role="button"
+              tabIndex={0}
+              aria-label={revelado ? 'Verso revelado' : 'Revelar o verso do card'}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && !revelado) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  revelar();
+                }
+              }}
+            >
+              <div className={`${styles.cardInner} ${revelado ? styles.cardInnerFlipped : ''}`}>
+                {/* Frente: ficha branca com a faixa do assunto */}
+                <div className={styles.cardFront} aria-hidden={revelado}>
+                  <div className={styles.cardTopo}>
+                    <span className={styles.selo}>
+                      <Icone nome={visual.icone} tamanho={14} />
+                      Pergunta
+                    </span>
+                    {nivelAnterior && (
+                      <span className={`${styles.ultima} ${styles[`ultima_${nivelAnterior}`]}`}>
+                        Última vez: {NIVEIS.find((n) => n.key === nivelAnterior)?.label}
+                      </span>
+                    )}
+                  </div>
+                  <div className={styles.cardCorpo}>
+                    <p className={`${styles.cardText} ${tamanhoTexto(card.frente)}`}>{card.frente}</p>
+                  </div>
+                  <div className={styles.cardRodape}>
+                    {!revelado && (
+                      <span className={styles.cardHint}>
+                        <span className={styles.hintTeclado}><kbd>Espaço</kbd> ou clique para virar</span>
+                        <span className={styles.hintToque}>Toque para virar</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Verso: cor do assunto, com a pergunta repetida em cima */}
+                <div className={styles.cardBack} aria-hidden={!revelado}>
+                  <div className={styles.cardTopo}>
+                    <span className={`${styles.selo} ${styles.seloVerso}`}>
+                      <Icone nome="check" tamanho={14} />
+                      Resposta
+                    </span>
+                  </div>
+                  <div className={styles.cardCorpo}>
+                    <p className={styles.lembrete}>{card.frente}</p>
+                    <p className={`${styles.cardTextBack} ${tamanhoTexto(card.verso)}`}>{card.verso}</p>
+                  </div>
+                  <div className={styles.cardRodape} />
+                </div>
+              </div>
             </div>
           </div>
+
+          <button
+            type="button"
+            className={styles.seta}
+            onClick={proximo}
+            disabled={salvando}
+            aria-label={ultimo ? 'Concluir' : 'Próximo card'}
+          >
+            <Icone nome={ultimo ? 'check' : 'seta'} tamanho={20} />
+          </button>
         </div>
 
-        {/* ── Avaliação (depois de revelar) ── */}
+        {/* ── Avaliação (depois de virar) ── */}
         <div className={styles.avaliacao}>
           {revelado ? (
             <>
-              <p className={styles.pergunta}>Como foi lembrar deste card?</p>
+              <p className={styles.pergunta}>Como foi lembrar?</p>
               <div className={styles.ratingBtns}>
-                {NIVEIS.map(({ key, label, tecla, style }) => (
+                {NIVEIS.map(({ key, label, desc, tecla, style }) => (
                   <button
                     key={key}
                     className={`${styles.ratingBtn} ${style} ${nivelNaSessao === key ? styles.ratingEscolhido : ''}`}
@@ -215,24 +281,25 @@ const EstudarPage = () => {
                     disabled={salvando}
                     aria-pressed={nivelNaSessao === key}
                   >
-                    {label}
-                    <span className={styles.tecla} aria-hidden="true">{tecla}</span>
+                    <span className={styles.ratingPonto} aria-hidden="true" />
+                    <span className={styles.ratingTexto}>
+                      <strong>{label}</strong>
+                      <span>{desc}</span>
+                    </span>
+                    <kbd className={styles.tecla} aria-hidden="true">{tecla}</kbd>
                   </button>
                 ))}
               </div>
             </>
           ) : (
-            <button className={styles.revelarBtn} onClick={revelar}>Revelar verso</button>
+            <button className={styles.revelarBtn} onClick={revelar}>
+              <Icone nome="girar" tamanho={18} />
+              Virar card
+            </button>
           )}
           {salvando && <p className={styles.salvando} role="status">Salvando avaliação...</p>}
           <MensagemErro>{erro}</MensagemErro>
         </div>
-
-        {/* ── Navegação ── */}
-        <nav className={styles.navegacao} aria-label="Navegar entre os cards">
-          <button className={styles.navBtn} onClick={anterior} disabled={index === 0 || salvando}>← Anterior</button>
-          <button className={styles.navBtn} onClick={proximo} disabled={salvando}>{ultimo ? 'Concluir' : 'Avançar →'}</button>
-        </nav>
       </main>
     </div>
   );
