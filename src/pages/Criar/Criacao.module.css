@@ -1,0 +1,399 @@
+/* Layout compartilhado: criar LearnDeck e criar deck */
+.page {
+  --fundo: #eef2f7;
+  --superficie: #ffffff;
+  --borda: #e2e8f0;
+  --texto: #111827;
+  --suave: #64748b;
+  --fraco: #94a3b8;
+  --azul: #368bff;
+  --azul-escuro: #2563eb;
+  --azul-claro: #eaf3ff;
+  --perigo: #ef4444;
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgba(54, 139, 255, 0.12), transparent 60%),
+    var(--fundo);
+  color: var(--texto);
+}
+
+/* ── Topo com os passos ─────────────────────── */
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 32px;
+}
+
+.voltar {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--suave);
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.voltar:hover { color: var(--texto); background: rgba(15, 23, 42, 0.05); }
+
+.passos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+}
+
+.passo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 6px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fraco);
+}
+
+.passoNum {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  background: #f1f5f9;
+}
+
+.passoAtual { color: var(--azul-escuro); background: var(--azul-claro); }
+.passoAtual .passoNum { background: var(--azul); color: #fff; }
+.passoFeito { color: var(--suave); }
+.passoFeito .passoNum { background: #dcfce7; color: #15803d; }
+
+/* ── Palco centralizado ─────────────────────── */
+.palco {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 24px 32px 56px;
+}
+
+.grade {
+  width: 100%;
+  max-width: 1040px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 56px;
+  align-items: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+.sobretitulo {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--azul);
+}
+
+.titulo {
+  margin: 4px 0 0;
+  font-size: 38px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.descricao {
+  margin: 10px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--suave);
+  max-width: 460px;
+}
+
+/* Campo grande, estilo "escrever na ficha" */
+.campoGrupo { display: flex; flex-direction: column; gap: 8px; }
+
+.rotulo {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--suave);
+}
+
+.campoLinha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--superficie);
+  border: 2px solid var(--borda);
+  border-radius: 16px;
+  padding: 6px 8px 6px 20px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.campoLinha:focus-within {
+  border-color: var(--azul);
+  box-shadow: 0 0 0 4px rgba(54, 139, 255, 0.15);
+}
+
+.campo {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--texto);
+  padding: 12px 0;
+}
+
+.campo::placeholder { color: var(--fraco); font-weight: 600; }
+
+.contador { font-size: 12px; color: var(--fraco); white-space: nowrap; }
+.contadorLimite { color: var(--perigo); font-weight: 700; }
+
+.dica {
+  font-size: 13px;
+  color: var(--suave);
+}
+
+.dica kbd {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--borda);
+  border-bottom-width: 2px;
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+/* Sugestões / escolha em "fichas" */
+.sugestoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sugestao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1.5px solid var(--borda);
+  border-radius: 999px;
+  padding: 7px 14px 7px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.sugestao:hover { border-color: var(--cor, var(--azul)); }
+.sugestao:active { transform: scale(0.97); }
+.sugestao svg { color: var(--cor, var(--azul)); }
+
+.sugestaoAtiva {
+  border-color: var(--cor, var(--azul));
+  background: var(--suaveCor, var(--azul-claro));
+  box-shadow: inset 0 0 0 1px var(--cor, var(--azul));
+}
+
+/* Botões */
+.botoes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.principal,
+.secundario,
+.textoBotao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 13px 20px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+
+.principal { background: var(--azul); color: #fff; border: none; }
+.principal:hover:not(:disabled) { background: var(--azul-escuro); }
+.principal:active:not(:disabled) { transform: scale(0.98); }
+.principal:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.secundario { background: var(--superficie); color: var(--texto); border: 1.5px solid var(--borda); }
+.secundario:hover { border-color: var(--fraco); }
+
+.textoBotao { background: none; border: none; color: var(--suave); padding: 10px 8px; }
+.textoBotao:hover { color: var(--texto); }
+
+/* Painel de sucesso (substitui a janela "Deseja prosseguir?") */
+.sucesso {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: entrar 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.sucessoSelo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 800;
+  color: #15803d;
+  background: #dcfce7;
+  border-radius: 999px;
+  padding: 5px 12px 5px 8px;
+}
+
+@keyframes entrar {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Coluna da prévia */
+.previa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.previaRotulo {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fraco);
+}
+
+.previaFichario { width: 100%; max-width: 320px; }
+
+.previaNota {
+  margin: 0;
+  font-size: 13px;
+  color: var(--suave);
+  text-align: center;
+  max-width: 300px;
+}
+
+/* Lista dos decks criados agora */
+.criados {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.criado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-left: 4px solid var(--cor, var(--azul));
+  border-radius: 12px;
+  padding: 10px 10px 10px 14px;
+  animation: entrar 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.criadoNome { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.criadoAcao {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--azul);
+  background: var(--azul-claro);
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vazio {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 32px;
+}
+
+.vazio p { color: var(--suave); margin: 0 0 16px; }
+
+@media (max-width: 900px) {
+  .grade { grid-template-columns: 1fr; gap: 32px; }
+  .previa { order: -1; }
+  .previaFichario { max-width: 260px; }
+  .titulo { font-size: 30px; }
+}
+
+@media (max-width: 600px) {
+  .header { grid-template-columns: auto 1fr; padding: 12px 16px; }
+  .passos { justify-self: end; }
+  .passo span:not(.passoNum) { display: none; }
+  .passo { padding: 4px; }
+  .palco { padding: 12px 16px 40px; place-items: start center; }
+  .campo { font-size: 20px; }
+  .botoes > .principal { flex: 1 1 100%; }
+}
+
+@media (hover: none) {
+  .dica { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sucesso, .criado { animation: none; }
+}
+
+:global(html[data-dark="true"]) .page {
+  --fundo: #0f172a;
+  --superficie: #1e293b;
+  --borda: #334155;
+  --texto: #e2e8f0;
+  --suave: #94a3b8;
+  --fraco: #64748b;
+  --azul: #60a5fa;
+  --azul-escuro: #3b82f6;
+  --azul-claro: rgba(96, 165, 250, 0.14);
+}
+
+:global(html[data-dark="true"]) .passoNum { background: #334155; }
+:global(html[data-dark="true"]) .sucessoSelo { background: rgba(34, 197, 94, 0.15); color: #4ade80; }

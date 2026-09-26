@@ -94,6 +94,7 @@
   grid-template-columns: minmax(0, 1fr) 340px;
   gap: 32px;
   align-items: start;
+  align-content: center; /* conteúdo no meio da tela quando sobra espaço */
 }
 
 .mesa {

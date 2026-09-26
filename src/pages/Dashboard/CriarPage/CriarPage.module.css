@@ -1,265 +1,235 @@
 .page {
-  padding: 26px 28px;
+  --superficie: #ffffff;
+  --borda: #e2e8f0;
+  --texto: #111827;
+  --cinza: #64748b;
+  --fraco: #94a3b8;
+  --azul: #368bff;
+  --azul-escuro: #2563eb;
+
+  min-height: 100vh;
+  display: grid;
+  place-items: center; /* conteúdo no meio da tela */
+  padding: 40px 32px;
+  color: var(--texto);
+  background: radial-gradient(1000px 420px at 80% -8%, rgba(54, 139, 255, 0.1), transparent 60%);
+}
+
+.container {
   width: 100%;
-  box-sizing: border-box;
-  height: 100%;
-}
-
-/* ── Container principal — mesmo tamanho do heroCard da Home ── */
-.mainCard {
-  border-radius: 22px;
-  width: 100%;
-  height: 100%;
-  max-width: 1420px;
-  max-height: 720px;
-  margin: 60px auto 0;
-  box-sizing: border-box;
-  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.14);
-  overflow: hidden;
-  animation: cardIn 0.35s cubic-bezier(0.34, 1.1, 0.64, 1) both;
-}
-
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(18px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0)     scale(1);   }
-}
-
-/* ── Estado vazio ───────────────────────────────── */
-.mainCardEmpty {
-  background: #2f86ff;
+  max-width: 1040px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  gap: 36px;
+}
+
+.cabeca { text-align: center; }
+
+.titulo {
+  margin: 0;
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.sub {
+  margin: 10px auto 0;
+  max-width: 520px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--cinza);
+}
+
+/* ── As 3 etapas ────────────────────────────── */
+.etapas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  padding: 44px 48px;
 }
 
-.emptyTitle {
-  font-size: 48px;
-  font-weight: 800;
-  color: #ffffff;
-  margin: 0;
-  line-height: 1.15;
-}
+.etapaItem { position: relative; display: flex; }
 
-.emptySubtitle {
-  font-size: 22px;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.6;
-  margin: 0;
-  max-width: 540px;
-}
+.etapa {
+  --cor: var(--azul);
+  --fundoIcone: #eaf3ff;
 
-.emptyBtn {
-  background: #ffffff;
-  color: #2f86ff;
-  border: none;
-  border-radius: 12px;
-  padding: 16px 56px;
-  font-size: 22px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.emptyBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* ── Estado com LearnDecks — 3 cards ────────────── */
-.mainCardFull {
-  display: flex;
-}
-
-.card {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 48px 40px;
-  gap: 20px;
-}
-
-.cardBlue {
-  background: #368BFF;
-}
-
-.cardWhite {
-  background: #ffffff;
-}
-
-/* ── Títulos ────────────────────────────────────── */
-.cardTitle {
-  font-size: 40px;
-  text-align: center;
-  font-weight: 800;
-  color: #ffffff;
-  margin: 0;
-  padding-top: 70px;
-  line-height: 1.2;
-}
-
-.cardTitleBlue {
-  color: #368BFF;
-}
-
-/* ── Descrições ─────────────────────────────────── */
-.cardDesc {
-  font-size: 20px;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.6;
-  font-weight: 600;
-  text-align: center;
-  margin: 0;
-  padding-top: 20px;
-  flex: 1;
-}
-
-.cardDescBlue {
-  color: #368BFF;
-}
-
-/* ── Botões ─────────────────────────────────────── */
-.cardBtn {
-  border: none;
-  border-radius: 12px;
-  padding: 16px 0;
-  font-size: 30px;
-  height: 70px;
-  font-weight: 800;
-  font-family: inherit;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  font: inherit;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 20px;
+  padding: 24px 22px 20px;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 16px 34px -24px rgba(30, 58, 138, 0.45);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+}
+
+/* faixa colorida no topo, como a aba de uma ficha */
+.etapa::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 6px;
+  background: var(--cor);
+}
+
+.etapa_learndeck { --cor: #368bff; --fundoIcone: #eaf3ff; }
+.etapa_deck { --cor: #8b5cf6; --fundoIcone: #f3eeff; }
+.etapa_cards { --cor: #10b981; --fundoIcone: #e8fbf3; }
+
+.etapa:hover:not(:disabled) {
+  transform: translateY(-4px);
+  border-color: var(--cor);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 22px 40px -24px rgba(30, 58, 138, 0.55);
+}
+
+.etapa:focus-visible { outline: 3px solid var(--cor); outline-offset: 3px; }
+.etapa:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.etapaNum {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--fraco);
+}
+
+.etapaIcone {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: var(--cor);
+  background: var(--fundoIcone);
+  margin-bottom: 6px;
+}
+
+.etapaTitulo { font-size: 22px; font-weight: 800; }
+
+.etapaTexto {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--cinza);
+  min-height: 44px;
+}
+
+.etapaRodape {
   width: 100%;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  margin-bottom: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--borda);
 }
 
-.cardBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+.etapaConta { font-size: 13px; font-weight: 600; color: var(--cinza); }
+
+.etapaCriar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--cor);
+  border-radius: 999px;
+  padding: 6px 14px 6px 10px;
 }
 
-.cardBtnWhite {
-  background: #ffffff;
-  color: #368BFF;
+.seta {
+  position: absolute;
+  right: -23px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  display: grid;
+  place-items: center;
+  color: var(--fraco);
+  z-index: 1;
 }
 
-.cardBtnBlue {
-  background: #1a6fd4;
-  color: #ffffff;
+/* ── Atalhos ────────────────────────────────── */
+.atalhos { display: flex; flex-direction: column; gap: 12px; }
+
+.atalhosTitulo {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fraco);
 }
 
-/* ── Responsivo ─────────────────────────────────── */
-@media (max-width: 960px) {
-  .mainCard {
-    max-height: unset;
-  }
-
-  .mainCardFull {
-    flex-direction: column;
-  }
-
-  .card {
-    padding: 36px 28px;
-  }
-
-  .emptyTitle {
-    font-size: 34px;
-  }
-
-  .emptySubtitle {
-    font-size: 18px;
-  }
+.atalhosLista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
 }
 
-@media (max-width: 600px) {
-  .page {
-    padding: 16px 14px;
-    height: auto;
-    min-height: calc(100vh - 96px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .mainCard {
-    margin: 0;
-    max-height: none;
-    height: auto;
-    border-radius: 18px;
-    width: 100%;
-  }
-
-  .mainCardEmpty {
-    padding: 32px 20px;
-    gap: 16px;
-  }
-
-  .emptyTitle {
-    font-size: 24px;
-  }
-
-  .emptySubtitle {
-    font-size: 14px;
-  }
-
-  .emptyBtn {
-    font-size: 16px;
-    padding: 13px 36px;
-  }
-
-  .card {
-    padding: 24px 20px;
-  }
-
-  .cardTitle {
-    font-size: 24px;
-    padding-top: 20px;
-  }
-
-  .cardDesc {
-    font-size: 14px;
-    padding-top: 10px;
-  }
-
-  .cardBtn {
-    font-size: 18px;
-    height: 52px;
-    margin-bottom: 20px;
-  }
+.atalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: inherit;
+  text-align: left;
+  color: var(--cinza);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-left: 4px solid var(--cor);
+  border-radius: 14px;
+  padding: 10px 14px 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
 }
 
-/* ── Dark Mode ───────────────────────────────── */
-:global(html[data-dark="true"]) .mainCardEmpty {
-  background: #1e3a8a;
+.atalho:hover { border-color: var(--cor); color: var(--cor); }
+.atalho:active { transform: scale(0.99); }
+
+.atalhoIcone {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--cor);
+  background: var(--suave);
+  flex-shrink: 0;
 }
 
-:global(html[data-dark="true"]) .cardBlue {
-  background: #1e3a8a;
+.atalhoTexto { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.atalhoTexto strong { color: var(--texto); font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.atalhoTexto span { font-size: 12px; color: var(--cinza); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 860px) {
+  .etapas { grid-template-columns: 1fr; gap: 14px; }
+  .seta { display: none; }
+  .titulo { font-size: 28px; }
+  .page { padding: 24px 16px 40px; place-items: start center; }
 }
 
-:global(html[data-dark="true"]) .cardWhite {
-  background: #1e293b;
+:global(html[data-dark="true"]) .page {
+  --superficie: #1e293b;
+  --borda: #334155;
+  --texto: #e2e8f0;
+  --cinza: #94a3b8;
+  --fraco: #64748b;
 }
 
-:global(html[data-dark="true"]) .cardTitleBlue {
-  color: #93c5fd;
-}
-
-:global(html[data-dark="true"]) .cardDescBlue {
-  color: #93c5fd;
-}
-
-:global(html[data-dark="true"]) .cardBtnBlue {
-  background: #1e40af;
-}
-
-:global(html[data-dark="true"]) .cardBtnWhite {
-  background: rgba(255,255,255,0.15);
-  color: #ffffff;
-}
+:global(html[data-dark="true"]) .etapa_learndeck { --fundoIcone: rgba(54, 139, 255, 0.16); }
+:global(html[data-dark="true"]) .etapa_deck { --fundoIcone: rgba(139, 92, 246, 0.18); }
+:global(html[data-dark="true"]) .etapa_cards { --fundoIcone: rgba(16, 185, 129, 0.16); }
+:global(html[data-dark="true"]) .atalhoIcone { background: color-mix(in srgb, var(--cor) 20%, #1e293b); }

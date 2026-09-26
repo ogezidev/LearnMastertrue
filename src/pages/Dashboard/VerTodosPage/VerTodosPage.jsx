@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
-import Breadcrumb from '@/components/Breadcrumb/Breadcrumb';
 import Dialogo from '@/components/Dialogo/Dialogo';
+import Fichario from '@/components/Fichario/Fichario';
+import Icone from '@/components/Icone/Icone';
 import { Carregando, ErroCarregar, MensagemErro } from '@/components/EstadoTela/EstadoTela';
+import { contarNiveis, dominio, semAcento, visualDoAssunto } from '@/utils/assunto';
 import styles from './VerTodosPage.module.css';
 
 const MAX_NOME = 50;
@@ -11,22 +13,20 @@ const MAX_TEXTO_CARD = 200;
 
 const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
-// Níveis de avaliação (a avaliação atual de um card é a mais recente)
 const NIVEIS = {
-  dificil: { label: 'Difícil', tag: styles.tagDificil, chip: styles.chipDificil },
-  bom:     { label: 'Bom',     tag: styles.tagBom,     chip: styles.chipBom },
-  facil:   { label: 'Fácil',   tag: styles.tagFacil,   chip: styles.chipFacil },
+  dificil: { label: 'Difícil', classe: styles.dificil },
+  bom: { label: 'Bom', classe: styles.bom },
+  facil: { label: 'Fácil', classe: styles.facil },
 };
 const FILTROS = [
-  { key: 'todos',        label: 'Todos',        chip: styles.chipTodos },
-  { key: 'dificil',      label: 'Difícil',      chip: styles.chipDificil },
-  { key: 'bom',          label: 'Bom',          chip: styles.chipBom },
-  { key: 'facil',        label: 'Fácil',        chip: styles.chipFacil },
-  { key: 'nao-avaliado', label: 'Não avaliado', chip: styles.chipNaoAvaliado },
+  { key: 'todos', label: 'Todos' },
+  { key: 'dificil', label: 'Difícil' },
+  { key: 'bom', label: 'Bom' },
+  { key: 'facil', label: 'Fácil' },
+  { key: 'nao-avaliado', label: 'Não avaliado' },
 ];
 
-// Busca sem diferenciar maiúsculas nem acentos ("matematica" acha "Matemática")
-const normalizar = (texto) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const normalizar = semAcento;
 
 // Destaca o termo buscado no texto original, mantendo acentos e maiúsculas
 const Destaque = ({ texto, termo }) => {
@@ -55,30 +55,28 @@ const Destaque = ({ texto, termo }) => {
   return partes;
 };
 
-// Trecho do verso ao redor do termo, para cards que só batem pelo verso
-const trecho = (texto, termo) => {
-  const i = normalizar(texto).indexOf(normalizar(termo));
-  if (i === -1) return texto;
-  const ini = Math.max(0, i - 30);
-  const fim = Math.min(texto.length, i + termo.length + 30);
-  return `${ini > 0 ? '…' : ''}${texto.slice(ini, fim)}${fim < texto.length ? '…' : ''}`;
-};
+// Barra fina com a proporção de cards em cada nível
+const BarraNiveis = ({ contagem }) => (
+  <span className={styles.barraNiveis} aria-label={`${contagem.dificil} difícil, ${contagem.bom} bom, ${contagem.facil} fácil, ${contagem.novos} não avaliados`}>
+    {contagem.total === 0
+      ? <span className={styles.segVazio} style={{ flexGrow: 1 }} />
+      : ['dificil', 'bom', 'facil', 'novos'].filter((k) => contagem[k] > 0).map((k) => (
+        <span key={k} className={styles[`seg_${k}`]} style={{ flexGrow: contagem[k] }} />
+      ))}
+  </span>
+);
 
-const PALETTE = ['#F87171','#FB923C','#FBBF24','#4ADE80','#60A5FA','#818CF8','#C084FC','#F472B6','#34D399'];
-function getColor(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
-  return PALETTE[Math.abs(h) % PALETTE.length];
-}
-
-// Div clicável que também abre com Enter/Espaço
-const ativarComTeclado = (acao) => (e) => {
-  if (e.target !== e.currentTarget) return;
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    acao();
-  }
-};
+// Botões de editar/excluir: irmãos da área clicável (nunca um botão dentro de outro)
+const Acoes = ({ nome, onEditar, onExcluir }) => (
+  <div className={styles.acoes}>
+    <button type="button" className={styles.acao} onClick={onEditar} aria-label={`Editar ${nome}`} title="Editar">
+      <Icone nome="lapis" tamanho={16} />
+    </button>
+    <button type="button" className={`${styles.acao} ${styles.acaoPerigo}`} onClick={onExcluir} aria-label={`Excluir ${nome}`} title="Excluir">
+      <Icone nome="lixeira" tamanho={16} />
+    </button>
+  </div>
+);
 
 const VerTodosPage = () => {
   const {
@@ -91,15 +89,15 @@ const VerTodosPage = () => {
   const { learnDeckId, deckId } = useParams();
   const [params, setParams] = useSearchParams();
 
-  // O nível atual vem da URL: o botão Voltar do navegador sobe um nível e recarregar mantém a tela
+  // O nível atual vem da URL: o Voltar do navegador sobe um nível e recarregar mantém a tela
   const ldId = learnDeckId ? Number(learnDeckId) : null;
   const dkId = deckId ? Number(deckId) : null;
   const nivel = dkId ? 'cards' : ldId ? 'decks' : 'learndecks';
 
-  // Busca e filtro também ficam na URL
   const termo = params.get('q') ?? '';
+  const busca = termo.trim();
   const filtro = FILTROS.some((f) => f.key === params.get('nota')) ? params.get('nota') : 'todos';
-  const buscando = termo.trim().length > 0;
+  const buscando = busca.length > 0;
 
   const atualizarParams = (novos) => {
     const p = new URLSearchParams(params);
@@ -107,26 +105,21 @@ const VerTodosPage = () => {
     setParams(p, { replace: true });
   };
 
-  const [zoomCard, setZoomCard] = useState(null);
-  const [zoomRevealed, setZoomRevealed] = useState(false);
-
-  // editModal: { type: 'learndeck'|'deck'|'flashcard', id, deckId?, nome?, frente?, verso? }
-  const [editModal, setEditModal] = useState(null);
+  const [virados, setVirados] = useState(() => new Set()); // cards mostrando o verso
+  const [edicao, setEdicao] = useState(null); // { type, id, deckId?, nome?, frente?, verso? }
   const [salvandoEdicao, setSalvandoEdicao] = useState(false);
   const [erroEdicao, setErroEdicao] = useState('');
-
-  // confirmacao: { tipo, id, deckId?, nome, decks, cards }
-  const [confirmacao, setConfirmacao] = useState(null);
+  const [confirmacao, setConfirmacao] = useState(null); // { tipo, id, deckId?, nome, decks, cards }
   const [excluindo, setExcluindo] = useState(false);
   const [erroExclusao, setErroExclusao] = useState('');
 
   const learnDeck = mainDecks.find((m) => m.id === ldId);
   const deck = decks.find((d) => d.id === dkId && d.mainDeckId === ldId);
   const naoEncontrado = dadosCarregados && ((ldId && !learnDeck) || (dkId && !deck));
+  const learnDeckDe = (id) => mainDecks.find((m) => m.id === id);
+  const visualDe = (md) => (md ? visualDoAssunto(md.nome, md.id) : visualDoAssunto('', null));
+  const visualAtual = visualDe(learnDeck);
 
-  const nomeLearnDeck = (id) => mainDecks.find((m) => m.id === id)?.nome ?? '';
-
-  // Todos os cards com o caminho até eles (para busca, edição e exclusão)
   const todosCards = useMemo(
     () => decks.flatMap((d) => d.cards.map((c, i) => ({
       ...c, posicao: i + 1, deckId: d.id, deckNome: d.nome, mainDeckId: d.mainDeckId,
@@ -134,28 +127,22 @@ const VerTodosPage = () => {
     [decks],
   );
 
-  const casa = (texto) => normalizar(texto).includes(normalizar(termo.trim()));
+  const casa = (texto) => normalizar(texto).includes(normalizar(busca));
   const nivelDoCard = (card) => cardRatings[card.id] ?? null;
   const passaFiltro = (card) =>
     filtro === 'todos' || (filtro === 'nao-avaliado' ? !nivelDoCard(card) : nivelDoCard(card) === filtro);
 
   // ── O que aparece em cada nível ──
-  const learnDecksVisiveis = nivel === 'learndecks'
-    ? mainDecks.filter((m) => !buscando || casa(m.nome))
-    : [];
-
+  const learnDecksVisiveis = nivel === 'learndecks' ? mainDecks.filter((m) => !buscando || casa(m.nome)) : [];
   const decksDoEscopo = nivel === 'learndecks' ? decks : decks.filter((d) => d.mainDeckId === ldId);
   const decksVisiveis = nivel === 'cards' ? [] : decksDoEscopo.filter((d) => !buscando || casa(d.nome));
-
   const cardsDoEscopo = nivel === 'cards'
     ? todosCards.filter((c) => c.deckId === dkId)
     : nivel === 'decks' ? todosCards.filter((c) => c.mainDeckId === ldId) : todosCards;
-  // Cards aparecem dentro de um deck, ou nos resultados de busca dos outros níveis
   const cardsPorTexto = nivel === 'cards' || buscando
     ? cardsDoEscopo.filter((c) => !buscando || casa(c.frente) || casa(c.verso))
     : [];
   const cardsVisiveis = cardsPorTexto.filter(passaFiltro);
-
   const contagemFiltro = (key) => cardsPorTexto.filter((c) =>
     key === 'todos' || (key === 'nao-avaliado' ? !nivelDoCard(c) : nivelDoCard(c) === key)).length;
 
@@ -164,28 +151,23 @@ const VerTodosPage = () => {
     (nivel === 'decks' && decksDoEscopo.length === 0) ||
     (nivel === 'cards' && cardsDoEscopo.length === 0);
 
-  const caminhoPai = nivel === 'cards' ? `/app/decks/${ldId}` : '/app/decks';
+  const irParaCriar = () => navigate(
+    nivel === 'cards' ? `/criar/flashcard?deck=${dkId}`
+      : nivel === 'decks' ? `/criar/deck?learndeck=${ldId}`
+      : '/criar/learndeck',
+  );
 
-  const limparBusca = () => atualizarParams({ q: null, nota: null });
+  const virar = (id) => setVirados((prev) => {
+    const novo = new Set(prev);
+    if (novo.has(id)) novo.delete(id);
+    else novo.add(id);
+    return novo;
+  });
 
   // ── Exclusão (mostra quantos itens vão junto) ──
-  const pedirExclusaoMainDeck = (e, md) => {
-    e.stopPropagation();
-    const filhos = decks.filter((d) => d.mainDeckId === md.id);
-    const cards = filhos.reduce((soma, d) => soma + d.cards.length, 0);
+  const pedirExclusao = (dados) => {
     setErroExclusao('');
-    setConfirmacao({ tipo: 'learndeck', id: md.id, nome: md.nome, decks: filhos.length, cards });
-  };
-
-  const pedirExclusaoDeck = (e, d) => {
-    e.stopPropagation();
-    setErroExclusao('');
-    setConfirmacao({ tipo: 'deck', id: d.id, nome: d.nome, decks: 0, cards: d.cards.length });
-  };
-
-  const pedirExclusaoCard = (card) => {
-    setErroExclusao('');
-    setConfirmacao({ tipo: 'flashcard', id: card.id, deckId: card.deckId, nome: card.frente, decks: 0, cards: 0 });
+    setConfirmacao(dados);
   };
 
   const confirmarExclusao = async () => {
@@ -195,10 +177,7 @@ const VerTodosPage = () => {
     try {
       if (confirmacao.tipo === 'learndeck') await deleteMainDeck(confirmacao.id);
       else if (confirmacao.tipo === 'deck') await deleteDeck(confirmacao.id);
-      else {
-        await deleteCard(confirmacao.deckId, confirmacao.id);
-        if (zoomCard?.id === confirmacao.id) setZoomCard(null);
-      }
+      else await deleteCard(confirmacao.deckId, confirmacao.id);
       setConfirmacao(null);
     } catch (err) {
       setErroExclusao(err.message);
@@ -211,12 +190,10 @@ const VerTodosPage = () => {
     if (!confirmacao) return '';
     if (confirmacao.tipo === 'learndeck') {
       if (confirmacao.decks === 0) return 'O LearnDeck está vazio.';
-      return `Isso apagará ${plural(confirmacao.decks, 'deck', 'decks')} e ${plural(confirmacao.cards, 'flashcard', 'flashcards')}.`;
+      return `Isso apagará ${plural(confirmacao.decks, 'deck', 'decks')} e ${plural(confirmacao.cards, 'flashcard', 'flashcards')}, com o histórico de avaliações.`;
     }
     if (confirmacao.tipo === 'deck') {
-      return confirmacao.cards === 0
-        ? 'O deck está vazio.'
-        : `Isso apagará ${plural(confirmacao.cards, 'flashcard', 'flashcards')}.`;
+      return confirmacao.cards === 0 ? 'O deck está vazio.' : `Isso apagará ${plural(confirmacao.cards, 'flashcard', 'flashcards')}, com o histórico de avaliações.`;
     }
     return 'O card e o histórico de avaliações dele serão apagados.';
   };
@@ -224,40 +201,22 @@ const VerTodosPage = () => {
   // ── Edição ──
   const abrirEdicao = (dados) => {
     setErroEdicao('');
-    setEditModal(dados);
+    setEdicao(dados);
   };
 
-  const openEditMainDeck = (e, md) => {
-    e.stopPropagation();
-    abrirEdicao({ type: 'learndeck', id: md.id, nome: md.nome });
-  };
+  const edicaoValida = edicao && (edicao.type === 'flashcard'
+    ? edicao.frente.trim() && edicao.verso.trim()
+    : edicao.nome.trim());
 
-  const openEditDeck = (e, d) => {
-    e.stopPropagation();
-    abrirEdicao({ type: 'deck', id: d.id, nome: d.nome });
-  };
-
-  const openEditCard = (card) => {
-    abrirEdicao({ type: 'flashcard', id: card.id, deckId: card.deckId, frente: card.frente, verso: card.verso });
-  };
-
-  const edicaoValida = editModal && (editModal.type === 'flashcard'
-    ? editModal.frente.trim() && editModal.verso.trim()
-    : editModal.nome.trim());
-
-  const handleSaveEdit = async () => {
+  const salvarEdicao = async () => {
     if (!edicaoValida || salvandoEdicao) return;
     setSalvandoEdicao(true);
     setErroEdicao('');
     try {
-      if (editModal.type === 'learndeck') {
-        await updateMainDeck(editModal.id, editModal.nome.trim());
-      } else if (editModal.type === 'deck') {
-        await updateDeck(editModal.id, editModal.nome.trim());
-      } else {
-        await updateCard(editModal.deckId, editModal.id, editModal.frente.trim(), editModal.verso.trim());
-      }
-      setEditModal(null);
+      if (edicao.type === 'learndeck') await updateMainDeck(edicao.id, edicao.nome.trim());
+      else if (edicao.type === 'deck') await updateDeck(edicao.id, edicao.nome.trim());
+      else await updateCard(edicao.deckId, edicao.id, edicao.frente.trim(), edicao.verso.trim());
+      setEdicao(null);
     } catch (err) {
       setErroEdicao(err.message);
     } finally {
@@ -265,157 +224,143 @@ const VerTodosPage = () => {
     }
   };
 
-  const openZoom = (card) => {
-    setZoomCard(card);
-    setZoomRevealed(false);
-  };
-
-  // ── Cabeçalho ──
-  const itensBreadcrumb = [
-    { label: 'Seus LearnDecks', to: '/app/decks' },
-    ...(learnDeck ? [{ label: learnDeck.nome, to: `/app/decks/${learnDeck.id}` }] : []),
-    ...(deck ? [{ label: deck.nome }] : []),
-  ];
-
-  const tituloNivel = { learndecks: 'Seus LearnDecks', decks: learnDeck?.nome ?? '', cards: deck?.nome ?? '' }[nivel];
-
-  const placeholderBusca = {
-    learndecks: 'Buscar LearnDecks, decks e cards...',
-    decks: `Buscar decks e cards em ${learnDeck?.nome ?? 'este LearnDeck'}...`,
-    cards: 'Buscar na frente ou no verso dos cards...',
-  }[nivel];
-
-  const irParaCriar = () => navigate(
-    nivel === 'cards' ? `/criar/flashcard?deck=${dkId}`
-      : nivel === 'decks' ? `/criar/deck?learndeck=${ldId}`
-      : '/criar/learndeck',
-  );
-
-  // ── Peças da lista ──
+  // ── Peças ──
   const renderLearnDeck = (md, i) => {
-    const qtdDecks = decks.filter((d) => d.mainDeckId === md.id).length;
-    const abrir = () => navigate(`/app/decks/${md.id}`);
+    const filhos = decks.filter((d) => d.mainDeckId === md.id);
+    const cards = filhos.flatMap((d) => d.cards);
     return (
-      <div
-        key={md.id}
-        className={styles.albumTile}
-        onClick={abrir}
-        onKeyDown={ativarComTeclado(abrir)}
-        role="button"
-        tabIndex={0}
-        aria-label={`Abrir LearnDeck ${md.nome}`}
-        style={{ animationDelay: `${Math.min(i * 45, 360)}ms` }}
-      >
-        <div className={styles.albumCover} style={{ background: getColor(md.nome) }}>
-          <span className={styles.albumInitial}>{md.nome[0]?.toUpperCase()}</span>
-        </div>
-        <div className={styles.albumInfo}>
-          <span className={styles.albumName}><Destaque texto={md.nome} termo={termo.trim()} /></span>
-          <span className={styles.albumMeta}>{plural(qtdDecks, 'deck', 'decks')}</span>
-        </div>
-        <div className={styles.albumActions}>
-          <button className={styles.tileEditBtn} onClick={(e) => openEditMainDeck(e, md)} title="Editar" aria-label={`Editar ${md.nome}`}>✎</button>
-          <button className={styles.tileDeleteBtn} onClick={(e) => pedirExclusaoMainDeck(e, md)} title="Excluir" aria-label={`Excluir ${md.nome}`}>✕</button>
-        </div>
-      </div>
+      <article key={md.id} className={styles.itemFichario} style={{ animationDelay: `${Math.min(i * 40, 320)}ms` }}>
+        <Link to={`/app/decks/${md.id}`} className={styles.itemLink} aria-label={`Abrir ${md.nome}`}>
+          <Fichario
+            nome={<Destaque texto={md.nome} termo={busca} />}
+            visual={visualDe(md)}
+            meta={`${plural(filhos.length, 'deck', 'decks')} · ${plural(cards.length, 'card', 'cards')}`}
+            etiquetas={filhos.map((d) => ({ chave: d.id, texto: d.nome }))}
+            progresso={cards.length ? dominio(cards, cardRatings) : null}
+          />
+        </Link>
+        <Acoes
+          nome={md.nome}
+          onEditar={() => abrirEdicao({ type: 'learndeck', id: md.id, nome: md.nome })}
+          onExcluir={() => pedirExclusao({ tipo: 'learndeck', id: md.id, nome: md.nome, decks: filhos.length, cards: cards.length })}
+        />
+      </article>
     );
   };
 
   const renderDeck = (d, i) => {
-    const abrir = () => navigate(`/app/decks/${d.mainDeckId}/${d.id}`);
+    const md = learnDeckDe(d.mainDeckId);
+    const v = visualDe(md);
+    const contagem = contarNiveis(d.cards, cardRatings);
+    const pct = Math.round(dominio(d.cards, cardRatings) * 100);
     return (
-      <div
+      <article
         key={d.id}
-        className={styles.albumTile}
-        onClick={abrir}
-        onKeyDown={ativarComTeclado(abrir)}
-        role="button"
-        tabIndex={0}
-        aria-label={`Abrir deck ${d.nome}`}
-        style={{ animationDelay: `${Math.min(i * 45, 360)}ms` }}
+        className={styles.deck}
+        style={{ '--cor': v.cor, '--suave': v.suave, '--escuro': v.escuro, animationDelay: `${Math.min(i * 40, 320)}ms` }}
       >
-        <div className={styles.albumCover} style={{ background: getColor(d.nome) }}>
-          <span className={styles.albumInitial}>{d.nome[0]?.toUpperCase()}</span>
-        </div>
-        <div className={styles.albumInfo}>
-          <span className={styles.albumName}><Destaque texto={d.nome} termo={termo.trim()} /></span>
-          <span className={styles.albumMeta}>
-            {nivel === 'learndecks' && `${nomeLearnDeck(d.mainDeckId)} · `}
-            {plural(d.cards.length, 'card', 'cards')}
+        <Link to={`/app/decks/${d.mainDeckId}/${d.id}`} className={styles.deckLink} aria-label={`Abrir deck ${d.nome}`}>
+          <span className={styles.deckAba}>
+            <Icone nome="camadas" tamanho={14} />
+            {nivel === 'learndecks' ? md?.nome : 'Deck'}
           </span>
-        </div>
-        <div className={styles.albumActions}>
-          <button className={styles.tileEditBtn} onClick={(e) => openEditDeck(e, d)} title="Editar" aria-label={`Editar ${d.nome}`}>✎</button>
-          <button className={styles.tileDeleteBtn} onClick={(e) => pedirExclusaoDeck(e, d)} title="Excluir" aria-label={`Excluir ${d.nome}`}>✕</button>
-        </div>
-      </div>
+          <span className={styles.deckNome}><Destaque texto={d.nome} termo={busca} /></span>
+          <span className={styles.deckMeta}>
+            {plural(d.cards.length, 'card', 'cards')}{d.cards.length > 0 && ` · ${pct}% dominado`}
+          </span>
+          <BarraNiveis contagem={contagem} />
+          <span className={styles.deckRodape}>
+            {contagem.dificil > 0 && <span className={styles.deckChip}>{contagem.dificil} {contagem.dificil === 1 ? 'difícil' : 'difíceis'}</span>}
+            {contagem.novos > 0 && <span className={`${styles.deckChip} ${styles.deckChipNovo}`}>{contagem.novos} {contagem.novos === 1 ? 'novo' : 'novos'}</span>}
+          </span>
+        </Link>
+        {d.cards.length > 0 && (
+          <button type="button" className={styles.deckEstudar} onClick={() => navigate(`/memorizar/${d.id}`)} aria-label={`Estudar ${d.nome}`}>
+            <Icone nome="play" tamanho={14} /> Estudar
+          </button>
+        )}
+        <Acoes
+          nome={d.nome}
+          onEditar={() => abrirEdicao({ type: 'deck', id: d.id, nome: d.nome })}
+          onExcluir={() => pedirExclusao({ tipo: 'deck', id: d.id, nome: d.nome, decks: 0, cards: d.cards.length })}
+        />
+      </article>
     );
   };
 
   const renderCard = (card, i) => {
     const nivelCard = nivelDoCard(card);
     const info = nivelCard ? NIVEIS[nivelCard] : null;
-    const soNoVerso = buscando && !casa(card.frente) && casa(card.verso);
+    const virado = virados.has(card.id);
+    const md = learnDeckDe(card.mainDeckId);
     return (
-      <div
-        key={card.id}
-        className={styles.flashCard}
-        onClick={() => openZoom(card)}
-        onKeyDown={ativarComTeclado(() => openZoom(card))}
-        role="button"
-        tabIndex={0}
-        aria-label={`Ver card: ${card.frente}`}
-        style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
-      >
-        <div className={styles.cardTopo}>
-          <span className={`${styles.tagNivel} ${info ? info.tag : styles.tagNaoAvaliado}`}>
-            {info ? info.label : 'Não avaliado'}
+      <article key={card.id} className={styles.ficha} style={{ animationDelay: `${Math.min(i * 25, 300)}ms` }}>
+        <button
+          type="button"
+          className={`${styles.fichaBotao} ${virado ? styles.fichaVirada : ''}`}
+          onClick={() => virar(card.id)}
+          aria-pressed={virado}
+          aria-label={virado ? `Resposta: ${card.verso}. Clique para ver a pergunta` : `Pergunta: ${card.frente}. Clique para ver a resposta`}
+        >
+          <span className={`${styles.fichaFace} ${styles.fichaFrente}`}>
+            <span className={styles.fichaTopo}>
+              <span className={styles.fichaNum}>{nivel === 'cards' ? `#${card.posicao}` : `${md?.nome ?? ''} › ${card.deckNome}`}</span>
+              <span className={`${styles.nivel} ${info ? info.classe : styles.novo}`}>{info ? info.label : 'Não avaliado'}</span>
+            </span>
+            <span className={styles.fichaTexto}><Destaque texto={card.frente} termo={busca} /></span>
+            <span className={styles.fichaDica}><Icone nome="girar" tamanho={13} /> ver resposta</span>
           </span>
-          <div className={styles.cardActions}>
-            <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); openEditCard(card); }} title="Editar" aria-label="Editar card">✎</button>
-            <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); pedirExclusaoCard(card); }} title="Excluir" aria-label="Excluir card">✕</button>
-          </div>
-        </div>
-        {nivel !== 'cards' && (
-          <span className={styles.cardCaminho}>{nomeLearnDeck(card.mainDeckId)} › {card.deckNome}</span>
-        )}
-        <p className={styles.flashName}><Destaque texto={card.frente} termo={termo.trim()} /></p>
-        {soNoVerso && (
-          <p className={styles.cardTrecho}>
-            Verso: <Destaque texto={trecho(card.verso, termo.trim())} termo={termo.trim()} />
-          </p>
-        )}
-        <span className={styles.cardHint}>
-          {nivel === 'cards' ? `#${card.posicao} · ` : ''}Clique para ver →
-        </span>
-      </div>
+          <span className={`${styles.fichaFace} ${styles.fichaVerso}`}>
+            <span className={styles.fichaTopo}><span className={styles.fichaNum}>Resposta</span></span>
+            <span className={styles.fichaTexto}><Destaque texto={card.verso} termo={busca} /></span>
+            <span className={styles.fichaDica}><Icone nome="girar" tamanho={13} /> ver pergunta</span>
+          </span>
+        </button>
+        <Acoes
+          nome="card"
+          onEditar={() => abrirEdicao({ type: 'flashcard', id: card.id, deckId: card.deckId, frente: card.frente, verso: card.verso })}
+          onExcluir={() => pedirExclusao({ tipo: 'flashcard', id: card.id, deckId: card.deckId, nome: card.frente, decks: 0, cards: 0 })}
+        />
+      </article>
     );
   };
 
+  const novoTile = (texto) => (
+    <button type="button" className={styles.novoTile} onClick={irParaCriar}>
+      <span className={styles.novoIcone}><Icone nome="mais" tamanho={22} /></span>
+      {texto}
+    </button>
+  );
+
   const chipsFiltro = (
-    <div className={styles.filterChips} role="group" aria-label="Filtrar por avaliação">
-      {FILTROS.map(({ key, label, chip }) => (
+    <div className={styles.filtros} role="group" aria-label="Filtrar por avaliação">
+      {FILTROS.map(({ key, label }) => (
         <button
           key={key}
-          className={`${styles.chip} ${chip} ${filtro === key ? styles.chipActive : ''}`}
+          type="button"
+          className={`${styles.filtro} ${styles[`filtro_${key.replace('-', '_')}`] ?? ''} ${filtro === key ? styles.filtroAtivo : ''}`}
           onClick={() => atualizarParams({ nota: key === 'todos' ? null : key })}
           aria-pressed={filtro === key}
         >
-          {label}
-          <span className={styles.chipCount}>{contagemFiltro(key)}</span>
+          {label}<span className={styles.filtroNum}>{contagemFiltro(key)}</span>
         </button>
       ))}
     </div>
   );
 
-  const semResultados = (
-    <div className={styles.emptyState}>
-      <p className={styles.emptyMsg}>
-        {buscando ? `Nada encontrado para “${termo.trim()}”` : 'Nenhum card com essa avaliação.'}
-        {buscando && filtro !== 'todos' && ' com esse filtro'}
-      </p>
-      <button className={styles.emptyBtn} onClick={limparBusca}>Limpar busca e filtro</button>
+  const vazio = (titulo, texto, acao) => (
+    <div className={styles.vazio}>
+      <div className={styles.vazioPilha} aria-hidden="true"><span /><span /><span /></div>
+      <h2>{titulo}</h2>
+      <p>{texto}</p>
+      {acao}
     </div>
+  );
+
+  const semResultados = vazio(
+    buscando ? `Nada encontrado para “${busca}”` : 'Nenhum card com essa avaliação',
+    buscando && filtro !== 'todos' ? 'Tente outro termo ou tire o filtro.' : 'Tente outro termo ou outro filtro.',
+    <button type="button" className={styles.botaoSecundario} onClick={() => atualizarParams({ q: null, nota: null })}>Limpar busca e filtro</button>,
   );
 
   const conteudo = () => {
@@ -424,245 +369,214 @@ const VerTodosPage = () => {
         ? <ErroCarregar mensagem={erroDados} onTentar={recarregarDados} />
         : <Carregando texto="Carregando seus LearnDecks..." />;
     }
-
     if (naoEncontrado) {
-      return (
-        <div className={styles.emptyState}>
-          <p className={styles.emptyMsg}>Este {dkId ? 'deck' : 'LearnDeck'} não foi encontrado. Ele pode ter sido excluído.</p>
-          <button className={styles.emptyBtn} onClick={() => navigate('/app/decks')}>Ir para Seus LearnDecks</button>
-        </div>
+      return vazio(
+        `Este ${dkId ? 'deck' : 'LearnDeck'} não foi encontrado`,
+        'Ele pode ter sido excluído em outro aparelho.',
+        <button type="button" className={styles.botaoPrincipal} onClick={() => navigate('/app/decks')}>Ir para Seus LearnDecks</button>,
       );
     }
-
     if (nivelVazio) {
-      const msg = {
-        learndecks: 'Você ainda não tem LearnDecks.',
-        decks: 'Este LearnDeck ainda não tem decks.',
-        cards: 'Este deck ainda não tem cards.',
+      const [t, x, b] = {
+        learndecks: ['Seu fichário está vazio', 'Crie um LearnDeck para cada assunto que você estuda.', 'Criar LearnDeck'],
+        decks: [`${learnDeck?.nome} ainda não tem decks`, 'Divida o assunto em decks: um para cada tema ou capítulo.', 'Criar deck'],
+        cards: ['Este deck ainda não tem cards', 'Escreva a pergunta na frente e a resposta no verso.', 'Escrever cards'],
       }[nivel];
-      return (
-        <div className={styles.emptyState}>
-          <p className={styles.emptyMsg}>{msg}</p>
-          <button className={styles.emptyBtn} onClick={irParaCriar}>Criar agora</button>
-        </div>
-      );
+      return vazio(t, x, <button type="button" className={styles.botaoPrincipal} onClick={irParaCriar}><Icone nome="mais" tamanho={18} /> {b}</button>);
     }
 
-    // Dentro de um deck: só cards (com busca e filtro)
     if (nivel === 'cards') {
       return (
         <>
           {chipsFiltro}
-          {cardsVisiveis.length === 0
-            ? semResultados
-            : <div className={styles.flashGrid}>{cardsVisiveis.map(renderCard)}</div>}
+          {cardsVisiveis.length === 0 ? semResultados : (
+            <div className={styles.gradeFichas}>
+              {cardsVisiveis.map(renderCard)}
+              {!buscando && filtro === 'todos' && novoTile('Novo card')}
+            </div>
+          )}
         </>
       );
     }
 
-    // Sem busca: só o nível atual
     if (!buscando) {
-      return nivel === 'learndecks'
-        ? <div className={styles.albumGrid}>{learnDecksVisiveis.map(renderLearnDeck)}</div>
-        : <div className={styles.albumGrid}>{decksVisiveis.map(renderDeck)}</div>;
+      return nivel === 'learndecks' ? (
+        <div className={styles.gradeFicharios}>
+          {learnDecksVisiveis.map(renderLearnDeck)}
+          {novoTile('Novo LearnDeck')}
+        </div>
+      ) : (
+        <div className={styles.gradeDecks}>
+          {decksVisiveis.map(renderDeck)}
+          {novoTile('Novo deck')}
+        </div>
+      );
     }
 
-    // Com busca: resultados agrupados
     const total = learnDecksVisiveis.length + decksVisiveis.length + cardsPorTexto.length;
     if (total === 0) return semResultados;
-
     return (
       <div className={styles.resultados}>
-        {nivel === 'learndecks' && learnDecksVisiveis.length > 0 && (
+        {learnDecksVisiveis.length > 0 && (
           <section aria-label="LearnDecks encontrados">
-            <h3 className={styles.grupoTitulo}>LearnDecks ({learnDecksVisiveis.length})</h3>
-            <div className={styles.albumGrid}>{learnDecksVisiveis.map(renderLearnDeck)}</div>
+            <h2 className={styles.grupoTitulo}>LearnDecks <span>{learnDecksVisiveis.length}</span></h2>
+            <div className={styles.gradeFicharios}>{learnDecksVisiveis.map(renderLearnDeck)}</div>
           </section>
         )}
         {decksVisiveis.length > 0 && (
           <section aria-label="Decks encontrados">
-            <h3 className={styles.grupoTitulo}>Decks ({decksVisiveis.length})</h3>
-            <div className={styles.albumGrid}>{decksVisiveis.map(renderDeck)}</div>
+            <h2 className={styles.grupoTitulo}>Decks <span>{decksVisiveis.length}</span></h2>
+            <div className={styles.gradeDecks}>{decksVisiveis.map(renderDeck)}</div>
           </section>
         )}
         {cardsPorTexto.length > 0 && (
           <section aria-label="Cards encontrados">
-            <h3 className={styles.grupoTitulo}>Cards ({cardsVisiveis.length})</h3>
+            <h2 className={styles.grupoTitulo}>Cards <span>{cardsVisiveis.length}</span></h2>
             {chipsFiltro}
             {cardsVisiveis.length === 0
-              ? <p className={styles.noResults}>Nenhum card com essa avaliação.</p>
-              : <div className={styles.flashGrid}>{cardsVisiveis.map(renderCard)}</div>}
+              ? <p className={styles.semCards}>Nenhum card com essa avaliação.</p>
+              : <div className={styles.gradeFichas}>{cardsVisiveis.map(renderCard)}</div>}
           </section>
         )}
       </div>
     );
   };
 
+  // ── Cabeçalho do nível ──
+  const cardsDoLearnDeck = todosCards.filter((c) => c.mainDeckId === ldId);
+  const resumo = {
+    learndecks: `${plural(mainDecks.length, 'LearnDeck', 'LearnDecks')} · ${plural(decks.length, 'deck', 'decks')} · ${plural(todosCards.length, 'card', 'cards')}`,
+    decks: `${plural(decksDoEscopo.length, 'deck', 'decks')} · ${plural(cardsDoLearnDeck.length, 'card', 'cards')}${cardsDoLearnDeck.length ? ` · ${Math.round(dominio(cardsDoLearnDeck, cardRatings) * 100)}% dominado` : ''}`,
+    cards: deck ? `${plural(deck.cards.length, 'card', 'cards')}${deck.cards.length ? ` · ${Math.round(dominio(deck.cards, cardRatings) * 100)}% dominado` : ''}` : '',
+  }[nivel];
+
+  const titulo = { learndecks: 'Seus LearnDecks', decks: learnDeck?.nome, cards: deck?.nome }[nivel];
+  const placeholder = {
+    learndecks: 'Buscar em tudo: LearnDecks, decks e cards',
+    decks: `Buscar em ${learnDeck?.nome ?? 'este LearnDeck'}`,
+    cards: 'Buscar na pergunta ou na resposta',
+  }[nivel];
+  const textoNovo = { learndecks: 'Novo LearnDeck', decks: 'Novo deck', cards: 'Novo card' }[nivel];
+
   return (
-    <div className={styles.page}>
-      <div className={styles.mainCard}>
+    <div
+      className={`${styles.page} ${nivel !== 'learndecks' ? styles.pageAssunto : ''}`}
+      style={{ '--cor': visualAtual.cor, '--suave': visualAtual.suave, '--escuro': visualAtual.escuro }}
+    >
+      <div className={styles.container}>
+        <header className={styles.cabeca}>
+          {nivel !== 'learndecks' && (
+            <nav className={styles.trilha} aria-label="Você está em">
+              <Link to="/app/decks">Seus LearnDecks</Link>
+              <span aria-hidden="true">›</span>
+              {nivel === 'cards' ? <Link to={`/app/decks/${ldId}`}>{learnDeck?.nome}</Link> : <span aria-current="page">{learnDeck?.nome}</span>}
+              {nivel === 'cards' && <><span aria-hidden="true">›</span><span aria-current="page">{deck?.nome}</span></>}
+            </nav>
+          )}
 
-        {/* ── Header ── */}
-        <div className={styles.header}>
-          <div className={styles.headerLeft}>
-            {nivel !== 'learndecks' && (
-              <button className={styles.backBtn} onClick={() => navigate(caminhoPai)}>← Voltar</button>
+          <div className={styles.cabecaLinha}>
+            {nivel !== 'learndecks' && learnDeck && (
+              <span className={styles.cabecaIcone}>
+                <Icone nome={nivel === 'cards' ? 'camadas' : visualAtual.icone} tamanho={28} />
+              </span>
             )}
-          </div>
-
-          <div className={styles.headerCenter}>
-            {nivel !== 'learndecks' && (
-              <Breadcrumb className={styles.breadcrumbClaro} itens={itensBreadcrumb} />
-            )}
-            <h2 className={styles.headerTitle}>{tituloNivel}</h2>
-          </div>
-
-          <div className={styles.headerRight}>
-            <div className={styles.headerActions}>
-              {!naoEncontrado && (
-                <button className={styles.createBtn} onClick={irParaCriar}>
-                  {{ learndecks: '+ LearnDeck', decks: '+ Deck', cards: '+ Cards' }[nivel]}
-                </button>
-              )}
-              {nivel === 'cards' && deck && deck.cards.length > 0 && (
-                <button
-                  className={styles.playBtn}
-                  onClick={() => navigate(`/memorizar/${dkId}`)}
-                  title="Estudar este deck"
-                  aria-label="Estudar este deck"
-                >▶</button>
-              )}
+            <div className={styles.cabecaTexto}>
+              <h1 className={styles.titulo}>{titulo}</h1>
+              {dadosCarregados && !naoEncontrado && <p className={styles.resumo}>{resumo}</p>}
             </div>
+            {dadosCarregados && !naoEncontrado && (
+              <div className={styles.cabecaAcoes}>
+                {nivel === 'cards' && deck?.cards.length > 0 && (
+                  <button type="button" className={styles.botaoEstudar} onClick={() => navigate(`/memorizar/${dkId}`)}>
+                    <Icone nome="play" tamanho={16} /> Estudar
+                  </button>
+                )}
+                <button type="button" className={styles.botaoPrincipal} onClick={irParaCriar}>
+                  <Icone nome="mais" tamanho={18} /> {textoNovo}
+                </button>
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* ── Busca ── */}
-        {dadosCarregados && !naoEncontrado && !nivelVazio && (
-          <div className={styles.toolbar}>
-            <div className={styles.searchWrap}>
-              <span className={styles.searchIcon} aria-hidden="true">⌕</span>
+          {dadosCarregados && !naoEncontrado && !nivelVazio && (
+            <div className={styles.busca}>
+              <Icone nome="busca" tamanho={20} />
               <input
-                className={styles.searchInput}
                 type="search"
-                placeholder={placeholderBusca}
-                aria-label={placeholderBusca}
+                placeholder={placeholder}
+                aria-label={placeholder}
                 value={termo}
                 onChange={(e) => atualizarParams({ q: e.target.value })}
               />
               {termo && (
-                <button className={styles.searchClear} onClick={() => atualizarParams({ q: null })} aria-label="Limpar busca">✕</button>
+                <button type="button" onClick={() => atualizarParams({ q: null })} aria-label="Limpar busca">
+                  <Icone nome="fechar" tamanho={16} />
+                </button>
               )}
             </div>
-          </div>
-        )}
+          )}
+        </header>
 
-        {/* ── Conteúdo ── */}
-        <div className={styles.gridWrapper}>{conteudo()}</div>
+        <main className={styles.conteudo}>{conteudo()}</main>
       </div>
 
-      {/* ── Card aberto ── */}
-      {zoomCard && (
-        <div className={styles.zoomOverlay} onClick={() => setZoomCard(null)}>
-          <div className={styles.zoomModal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Card">
-            <div className={styles.zoomHeader}>
-              <span className={styles.zoomIndex}>{nomeLearnDeck(zoomCard.mainDeckId)} › {zoomCard.deckNome}</span>
-              <div className={styles.zoomHeaderActions}>
-                <button className={styles.zoomEditBtn} onClick={() => { setZoomCard(null); openEditCard(zoomCard); }}>
-                  ✎ Editar
-                </button>
-                <button className={styles.zoomDeleteBtn} onClick={() => pedirExclusaoCard(zoomCard)}>
-                  Excluir
-                </button>
-                <button className={styles.zoomCloseBtn} onClick={() => setZoomCard(null)} aria-label="Fechar">✕</button>
-              </div>
-            </div>
-
-            <div className={styles.zoomBody}>
-              <div className={styles.zoomFrente}>
-                <span className={styles.zoomSideLabel}>Frente</span>
-                <p className={styles.zoomText}>{zoomCard.frente}</p>
-              </div>
-
-              {!zoomRevealed ? (
-                <button className={styles.revealBtn} onClick={() => setZoomRevealed(true)}>
-                  Mostrar verso
-                </button>
-              ) : (
-                <div className={styles.zoomVerso}>
-                  <span className={styles.zoomSideLabelVerso}>Verso</span>
-                  <p className={styles.zoomTextVerso}>{zoomCard.verso}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Edição ── */}
-      {editModal && (
-        <div className={styles.modalOverlay} onClick={() => setEditModal(null)}>
+      {edicao && (
+        <div className={styles.modalFundo} onClick={() => !salvandoEdicao && setEdicao(null)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="titulo-edicao">
-
-            <div className={styles.modalHeader}>
-              <h3 id="titulo-edicao" className={styles.modalTitle}>
-                {editModal.type === 'flashcard' ? 'Editar Flashcard'
-                  : editModal.type === 'deck' ? 'Editar Deck'
-                  : 'Editar LearnDeck'}
-              </h3>
-              <button className={styles.modalClose} onClick={() => setEditModal(null)} aria-label="Fechar">✕</button>
+            <div className={styles.modalTopo}>
+              <h2 id="titulo-edicao">
+                {edicao.type === 'flashcard' ? 'Editar card' : edicao.type === 'deck' ? 'Renomear deck' : 'Renomear LearnDeck'}
+              </h2>
+              <button type="button" className={styles.acao} onClick={() => setEdicao(null)} aria-label="Fechar"><Icone nome="fechar" tamanho={18} /></button>
             </div>
-
-            <div className={styles.modalBody}>
-              {editModal.type === 'flashcard' ? (
+            <form className={styles.modalCorpo} onSubmit={(e) => { e.preventDefault(); salvarEdicao(); }}>
+              {edicao.type === 'flashcard' ? (
                 <>
-                  <label className={styles.modalLabel} htmlFor="editar-frente">Frente</label>
+                  <label htmlFor="editar-frente">Frente <em>pergunta</em></label>
                   <textarea
                     id="editar-frente"
-                    className={styles.modalTextarea}
-                    value={editModal.frente}
-                    onChange={(e) => setEditModal((m) => ({ ...m, frente: e.target.value.slice(0, MAX_TEXTO_CARD) }))}
-                    placeholder="Frente do card..."
+                    className={styles.modalCampo}
+                    value={edicao.frente}
+                    onChange={(e) => setEdicao((m) => ({ ...m, frente: e.target.value.slice(0, MAX_TEXTO_CARD) }))}
                     maxLength={MAX_TEXTO_CARD}
                     rows={3}
+                    autoFocus
                   />
-                  <span className={styles.modalContador}>{editModal.frente.length}/{MAX_TEXTO_CARD}</span>
-                  <label className={styles.modalLabel} htmlFor="editar-verso">Verso</label>
+                  <span className={styles.modalContador}>{edicao.frente.length}/{MAX_TEXTO_CARD}</span>
+                  <label htmlFor="editar-verso">Verso <em>resposta</em></label>
                   <textarea
                     id="editar-verso"
-                    className={`${styles.modalTextarea} ${styles.modalTextareaVerso}`}
-                    value={editModal.verso}
-                    onChange={(e) => setEditModal((m) => ({ ...m, verso: e.target.value.slice(0, MAX_TEXTO_CARD) }))}
-                    placeholder="Verso do card..."
+                    className={`${styles.modalCampo} ${styles.modalVerso}`}
+                    value={edicao.verso}
+                    onChange={(e) => setEdicao((m) => ({ ...m, verso: e.target.value.slice(0, MAX_TEXTO_CARD) }))}
                     maxLength={MAX_TEXTO_CARD}
                     rows={3}
                   />
-                  <span className={styles.modalContador}>{editModal.verso.length}/{MAX_TEXTO_CARD}</span>
+                  <span className={styles.modalContador}>{edicao.verso.length}/{MAX_TEXTO_CARD}</span>
                 </>
               ) : (
                 <>
-                  <label className={styles.modalLabel} htmlFor="editar-nome">Nome</label>
+                  <label htmlFor="editar-nome">Nome</label>
                   <input
                     id="editar-nome"
-                    className={styles.modalInput}
-                    value={editModal.nome}
-                    onChange={(e) => setEditModal((m) => ({ ...m, nome: e.target.value.slice(0, MAX_NOME) }))}
-                    placeholder="Nome..."
+                    className={styles.modalCampo}
+                    value={edicao.nome}
+                    onChange={(e) => setEdicao((m) => ({ ...m, nome: e.target.value.slice(0, MAX_NOME) }))}
                     maxLength={MAX_NOME}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                     autoFocus
                   />
-                  <span className={styles.modalContador}>{editModal.nome.length}/{MAX_NOME}</span>
+                  <span className={styles.modalContador}>{edicao.nome.length}/{MAX_NOME}</span>
                 </>
               )}
-            </div>
-
-            <div className={styles.modalFooter}>
-              <button className={styles.modalCancel} onClick={() => setEditModal(null)}>Cancelar</button>
-              <button className={styles.modalSave} onClick={handleSaveEdit} disabled={!edicaoValida || salvandoEdicao}>
-                {salvandoEdicao ? 'Salvando...' : 'Salvar'}
-              </button>
-            </div>
-            {erroEdicao && <div className={styles.modalErro}><MensagemErro>{erroEdicao}</MensagemErro></div>}
+              <MensagemErro>{erroEdicao}</MensagemErro>
+              <div className={styles.modalBotoes}>
+                <button type="button" className={styles.botaoSecundario} onClick={() => setEdicao(null)}>Cancelar</button>
+                <button type="submit" className={styles.botaoPrincipal} disabled={!edicaoValida || salvandoEdicao}>
+                  {salvandoEdicao ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -670,7 +584,6 @@ const VerTodosPage = () => {
       {/* ── Confirmação de exclusão ── */}
       {confirmacao && (
         <Dialogo
-          icone="🗑️"
           titulo={confirmacao.tipo === 'flashcard' ? 'Excluir este card?' : `Excluir “${confirmacao.nome}”?`}
           onFechar={() => !excluindo && setConfirmacao(null)}
           acoes={[
