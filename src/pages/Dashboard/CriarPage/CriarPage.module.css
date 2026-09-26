@@ -7,12 +7,11 @@
   --azul: #368bff;
   --azul-escuro: #2563eb;
 
-  min-height: 100vh;
+  /* fica dentro do painel azul do DashboardLayout */
   display: grid;
-  place-items: center; /* conteúdo no meio da tela */
+  place-items: center; /* conteúdo no meio do painel */
   padding: 40px 32px;
   color: var(--texto);
-  background: radial-gradient(1000px 420px at 80% -8%, rgba(54, 139, 255, 0.1), transparent 60%);
 }
 
 .container {
@@ -233,3 +232,10 @@
 :global(html[data-dark="true"]) .etapa_deck { --fundoIcone: rgba(139, 92, 246, 0.18); }
 :global(html[data-dark="true"]) .etapa_cards { --fundoIcone: rgba(16, 185, 129, 0.16); }
 :global(html[data-dark="true"]) .atalhoIcone { background: color-mix(in srgb, var(--cor) 20%, #1e293b); }
+
+/* Textos que ficam direto sobre o painel azul */
+.titulo { color: #ffffff; }
+.sub { color: rgba(255, 255, 255, 0.85); }
+.atalhosTitulo { color: rgba(255, 255, 255, 0.75); }
+.seta { color: rgba(255, 255, 255, 0.7); }
+.etapa:focus-visible { outline-color: #ffffff; }

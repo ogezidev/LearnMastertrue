@@ -15,20 +15,16 @@
   --pauta: rgba(54, 139, 255, 0.12);
   --margem: rgba(239, 68, 68, 0.3);
 
-  min-height: 100vh;
+  /* fica dentro do painel azul do DashboardLayout */
   color: var(--texto);
-  background: radial-gradient(1000px 420px at 80% -8%, rgba(54, 139, 255, 0.1), transparent 60%);
 }
 
-/* Dentro de um LearnDeck/deck o fundo pega a cor do assunto */
-.pageAssunto {
-  background: radial-gradient(1000px 420px at 80% -8%, color-mix(in srgb, var(--cor) 16%, transparent), transparent 60%);
-}
+.pageAssunto {}
 
 .container {
-  max-width: 1120px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 36px 32px 64px;
+  padding: 36px 36px 48px;
 }
 
 /* ── Cabeçalho ──────────────────────────────── */
@@ -693,3 +689,35 @@
 :global(html[data-dark="true"]) .bom { color: #fcd34d; background: rgba(245, 158, 11, 0.18); }
 :global(html[data-dark="true"]) .facil { color: #86efac; background: rgba(34, 197, 94, 0.18); }
 :global(html[data-dark="true"]) .deckChipNovo { color: #93c5fd; background: rgba(96, 165, 250, 0.18); }
+
+/* ── Sobre o painel azul ────────────────────── */
+.trilha, .trilha a { color: rgba(255, 255, 255, 0.8); }
+.trilha a:hover { color: #ffffff; background: rgba(255, 255, 255, 0.12); }
+.trilha [aria-current] { color: #ffffff; }
+.titulo { color: #ffffff; }
+.resumo { color: rgba(255, 255, 255, 0.85); }
+.cabecaIcone {
+  color: var(--cor);
+  background: #ffffff;
+  box-shadow: 0 10px 24px -12px rgba(15, 23, 42, 0.5);
+}
+.cabeca .botaoPrincipal,
+.vazio .botaoPrincipal { background: #ffffff; color: var(--azul-escuro); }
+.cabeca .botaoPrincipal:hover:not(:disabled),
+.vazio .botaoPrincipal:hover:not(:disabled) { background: #eaf3ff; }
+.botaoEstudar { background: rgba(255, 255, 255, 0.14); color: #ffffff; border-color: rgba(255, 255, 255, 0.45); }
+.botaoEstudar:hover { background: rgba(255, 255, 255, 0.24); }
+.busca { border-color: transparent; box-shadow: 0 10px 24px -16px rgba(15, 23, 42, 0.5); }
+.busca:focus-within { border-color: #ffffff; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3); }
+.grupoTitulo { color: #ffffff; }
+.semCards { color: rgba(255, 255, 255, 0.85); }
+.vazio h2 { color: #ffffff; }
+.vazio p { color: rgba(255, 255, 255, 0.85); }
+.novoTile { color: rgba(255, 255, 255, 0.9); border-color: rgba(255, 255, 255, 0.45); }
+.novoTile:hover { color: #ffffff; border-color: #ffffff; background: rgba(255, 255, 255, 0.08); }
+.novoIcone { background: rgba(255, 255, 255, 0.16); border-color: transparent; }
+.filtro { border-color: transparent; }
+.filtroAtivo { background: #0f172a; border-color: #0f172a; }
+.itemLink:focus-visible, .deckLink:focus-visible, .fichaBotao:focus-visible { outline-color: #ffffff; }
+.deck, .ficha { color: var(--texto); }
+.modal { color: var(--texto); }
